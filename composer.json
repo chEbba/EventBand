@@ -1,6 +1,10 @@
 {
     "name": "che/event-band",
-    "description": "description_text",
+    "description": "Asynchronous event dispatching ",
+    "keywords": ["event", "dispatcher", "queue", "async", "asynchronous", "rabbitmq", "message"],
+    "homepage": "http://github.com/chEbba/EventBand",
+    "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "Kirill chEbba Chebunin",
