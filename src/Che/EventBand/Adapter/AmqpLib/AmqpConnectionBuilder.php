@@ -23,8 +23,8 @@ class AmqpConnectionBuilder implements AmqpConnectionFactory
     private $connection;
     private $host = 'localhost';
     private $port = '5672';
-    private $user;
-    private $password;
+    private $user = 'guest';
+    private $password = 'guest';
     private $virtualHost = '/';
 
     /**
