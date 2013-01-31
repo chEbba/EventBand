@@ -42,7 +42,8 @@ class AmqpLibPublisher extends AmqpLibAdapter implements EventPublisher
      *                                                 Exchange will not be created.
      *                                                 You should setup exchange by yourself
      * @param int                   $channelId         AMQP channel id
-     * @param string|null           $routingKey        Message routing key
+     * @param string|null           $routingKey        Message routing key. If null event name will be used.
+     *                                                 To pass empty routing key use empty string ''
      * @param int                   $deliveryMode      DELIVERY_MODE_* constant
      *
      * @see AmqpLibAdapter::__construct()
@@ -77,5 +78,10 @@ class AmqpLibPublisher extends AmqpLibAdapter implements EventPublisher
         } catch (\Exception $e) {
             throw new PublishEventException($event, 'AMQP basic_publish error', $e);
         }
+    }
+
+    protected function getRoutingKey(Event $event)
+    {
+        return $this->routingKey === null ? $event->getName(): $this->routingKey;
     }
 }
