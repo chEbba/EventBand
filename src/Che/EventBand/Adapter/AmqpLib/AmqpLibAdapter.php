@@ -36,7 +36,7 @@ abstract class AmqpLibAdapter
     {
         $this->connectionFactory = $connectionFactory;
         $this->serializer = $serializer;
-        $this->channelId = (int) $channelId;
+        $this->channelId = $channelId ? (int) $channelId : null; // Convert 0 to null because 0 is reserved for connection itself
     }
 
     /**
