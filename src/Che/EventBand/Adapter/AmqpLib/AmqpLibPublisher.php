@@ -74,7 +74,7 @@ class AmqpLibPublisher extends AmqpLibAdapter implements EventPublisher
         }
 
         try {
-            $this->getChannel()->basic_publish($msg, $this->exchange, $this->routingKey);
+            $this->getChannel()->basic_publish($msg, $this->exchange, $this->getRoutingKey($event));
         } catch (\Exception $e) {
             throw new PublishEventException($event, 'AMQP basic_publish error', $e);
         }
