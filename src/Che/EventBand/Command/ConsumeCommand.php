@@ -14,7 +14,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class ConsumeCommand extends AbstractConsumeCommand
 {
     private $consumer;
-    private $dispatcher;
     private $processorLoader;
 
     public function setConsumer(EventConsumer $reader)
@@ -31,22 +30,6 @@ class ConsumeCommand extends AbstractConsumeCommand
         }
 
         return $this->consumer;
-    }
-
-    public function setDispatcher(EventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-        $this->callback = null;
-
-        return $this;
-    }
-
-    /**
-     * @return EventDispatcherInterface
-     */
-    public function getDispatcher()
-    {
-        return $this->dispatcher;
     }
 
     public function setProcessorLoader($processorLoader)

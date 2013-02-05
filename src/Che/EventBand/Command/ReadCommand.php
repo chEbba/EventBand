@@ -13,7 +13,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class ReadCommand extends AbstractReadCommand
 {
     private $reader;
-    private $dispatcher;
     private $processorLoader;
 
     public function setReader(EventReader $reader)
@@ -33,25 +32,6 @@ class ReadCommand extends AbstractReadCommand
         }
 
         return $this->reader;
-    }
-
-    public function setDispatcher(EventDispatcherInterface $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getDispatcher()
-    {
-        if (!$this->dispatcher) {
-            throw new \BadMethodCallException('No dispatcher was set');
-        }
-
-        return $this->dispatcher;
     }
 
     public function setProcessorLoader($processorLoader)

@@ -19,8 +19,6 @@ abstract class AbstractProcessCommand extends Command
     private $executed = false;
     private $signalsEnabled = false;
 
-    abstract protected function getDispatcher();
-
     /**
      * @return \Che\EventBand\EventProcessorLoader
      */
@@ -105,11 +103,8 @@ abstract class AbstractProcessCommand extends Command
     protected function getEventCallback($name)
     {
         $processor = $this->getProcessorLoader()->loadProcessor($name);
-        $dispatcher = $this->getDispatcher();
 
-        return function (Event $event) use ($processor, $dispatcher) {
-            $event->setDispatcher($dispatcher);
-
+        return function (Event $event) use ($processor) {
             call_user_func($processor, $event);
         };
     }
