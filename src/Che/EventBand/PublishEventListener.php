@@ -20,24 +20,34 @@ use Symfony\Component\EventDispatcher\Event;
 class PublishEventListener
 {
     private $publisher;
-    private $stopPropagation;
+    private $propagation;
 
     /**
      * Constructor
      *
-     * @param EventPublisher $publisher       Event publisher instance
-     * @param bool           $stopPropagation Should listener stops event propagation after publish?
+     * @param EventPublisher $publisher   Event publisher instance
+     * @param bool           $propagation If false event propagation will be stopped after publish
      */
-    public function __construct(EventPublisher $publisher, $stopPropagation = false)
+    public function __construct(EventPublisher $publisher, $propagation = true)
     {
         $this->publisher = $publisher;
-        $this->stopPropagation = (bool) $stopPropagation;
+        $this->propagation = (bool) $propagation;
+    }
+
+    public function getPropagation()
+    {
+        return $this->propagation;
+    }
+
+    public function getPublisher()
+    {
+        return $this->publisher;
     }
 
     public function __invoke(Event $event)
     {
         $this->publisher->publishEvent($event);
-        if ($this->stopPropagation) {
+        if (!$this->propagation) {
             $event->stopPropagation();
         }
     }
