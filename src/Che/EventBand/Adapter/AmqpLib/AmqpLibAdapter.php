@@ -20,7 +20,13 @@ use Che\EventBand\Serializer\EventSerializer;
 abstract class AmqpLibAdapter
 {
     private $connectionFactory;
+    /**
+     * @var \PhpAmqpLib\Connection\AMQPConnection
+     */
     private $connection;
+    /**
+     * @var \PhpAmqpLib\Channel\AMQPChannel
+     */
     private $channel;
     private $channelId;
     private $serializer;
@@ -77,14 +83,25 @@ abstract class AmqpLibAdapter
         return $this->serializer;
     }
 
+    protected function closeChannel($created = true)
+    {
+        if (!$this->channel) {
+            return false;
+        }
+
+        $this->channel = null;
+        if (!$created || $this->channelId) {
+            $this->channel->close();
+        }
+
+        return true;
+    }
+
     /**
      * Destructor
      */
     public function __destruct()
     {
-        // Close channel if we create it
-        if (!$this->channelId) {
-            $this->getChannel()->close();
-        }
+        $this->closeChannel();
     }
 }
