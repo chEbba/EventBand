@@ -9,10 +9,12 @@
 
 namespace Che\EventBand\Adapter\AmqpLib;
 
+use Che\EventBand\EventCallbackException;
 use Che\EventBand\EventConsumer;
 use Che\EventBand\EventReader;
 use Che\EventBand\ReadEventException;
 use Che\EventBand\Serializer\EventSerializer;
+use Che\EventBand\Serializer\SerializerException;
 use PhpAmqpLib\Message\AMQPMessage;
 
 /**
@@ -24,6 +26,7 @@ use PhpAmqpLib\Message\AMQPMessage;
 class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
 {
     private $queue;
+    private $messageCallback;
 
     /**
      * Constructor
@@ -58,8 +61,8 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
             return false;
         }
 
-        call_user_func($callback, $this->getSerializer()->deserializeEvent($message->body));
-        $channel->basic_ack($message->delivery_info['delivery_tag']);
+        $messageCallback = $this->getMessageCallback($callback);
+        $messageCallback($message);
 
         return true;
     }
@@ -70,19 +73,21 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
     public function consumeEvents($callback, $timeout)
     {
         try {
-            $serializer = $this->getSerializer();
             $channel = $this->getChannel();
+
+            $messageCallback = $this->getMessageCallback($callback);
 
             $channel->basic_consume(
                 $this->queue,
                 '',
                 false, false, true, false,
-                function(AMQPMessage $message) use ($channel, $serializer, $callback) {
-                    $event = $serializer->deserializeEvent($message->body);
-                    $result = call_user_func($callback, $event);
-                    $channel->basic_ack($message->delivery_info['delivery_tag']);
+                function(AMQPMessage $message) use ($messageCallback) {
+                    $result = $messageCallback($message);
+
                     // Stop consuming
                     if (!$result) {
+                        /** @var $channel \PhpAmqpLib\Channel\AMQPChannel */
+                        $channel = $message->delivery_info['channel'];
                         $channel->basic_cancel($message->delivery_info['consumer_tag']);
                     }
                 }
@@ -115,5 +120,44 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
         } catch (\Exception $e) {
             throw new ReadEventException('Exception while consuming', $e); // TODO: Throw another exception
         }
+    }
+
+    /**
+     * @param callable $callback
+     *
+     * @return \Closure
+     * @throws \Che\EventBand\EventCallbackException
+     */
+    protected function getMessageCallback($callback)
+    {
+        if (!$this->messageCallback) {
+            $serializer = $this->getSerializer();
+            $this->messageCallback = function (AMQPMessage $msg) use ($callback, $serializer) {
+                /** @var $channel \PhpAmqpLib\Channel\AMQPChannel */
+                $channel = $msg->delivery_info['channel'];
+
+                try {
+                    $event = $serializer->deserializeEvent($msg->body);
+                } catch (SerializerException $e) {
+                    $channel->basic_reject($msg->delivery_info['delivery_tag'], true);
+
+                    throw new ReadEventException('Error on event deserialization', $e);
+                }
+
+                try {
+                    $result = call_user_func($callback, $event);
+                } catch (\Exception $e) {
+                    $channel->basic_reject($msg->delivery_info['delivery_tag'], true);
+
+                    throw new EventCallbackException($callback, $event, $e);
+                }
+
+                $channel->basic_ack($msg->delivery_info['delivery_tag']);
+
+                return $result;
+            };
+        }
+
+        return $this->messageCallback;
     }
 }
