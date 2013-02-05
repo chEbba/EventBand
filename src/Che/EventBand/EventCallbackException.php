@@ -12,12 +12,12 @@ namespace Che\EventBand;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Exception while executing event callback
+ * Exception while executing event callback on read
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class EventCallbackException extends \RuntimeException
+class EventCallbackException extends ReadEventException
 {
     private $callback;
     private $event;

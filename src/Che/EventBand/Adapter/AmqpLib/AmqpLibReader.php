@@ -15,6 +15,7 @@ use Che\EventBand\EventReader;
 use Che\EventBand\ReadEventException;
 use Che\EventBand\Serializer\EventSerializer;
 use Che\EventBand\Serializer\SerializerException;
+use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
 /**
@@ -62,7 +63,7 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
         }
 
         $messageCallback = $this->getMessageCallback($callback);
-        $messageCallback($message);
+        $messageCallback($channel, $message);
 
         return true;
     }
@@ -73,52 +74,50 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
     public function consumeEvents($callback, $timeout)
     {
         try {
-            $channel = $this->getChannel();
+            $this->doConsume($this->getMessageCallback($callback), $timeout);
+        } catch (ReadEventException $e) {
+            $this->closeChannel();
 
-            $messageCallback = $this->getMessageCallback($callback);
+            throw $e;
+        } catch (\Exception $e) {
+            $this->closeChannel();
 
-            $channel->basic_consume(
-                $this->queue,
-                '',
-                false, false, true, false,
-                function(AMQPMessage $message) use ($messageCallback) {
-                    $result = $messageCallback($message);
+            throw new ReadEventException('Exception while consuming', $e);
+        }
+    }
 
-                    // Stop consuming
-                    if (!$result) {
-                        /** @var $channel \PhpAmqpLib\Channel\AMQPChannel */
-                        $channel = $message->delivery_info['channel'];
-                        $channel->basic_cancel($message->delivery_info['consumer_tag']);
-                    }
-                }
-            );
-
-            while (count($channel->callbacks)) {
-                $read   = array($this->getConnection()->getSocket());
-                $write  = array();
-                $except = array();
-                if (false === ($num_changed_streams = @stream_select($read, $write, $except, $timeout))) {
-                    // Check if we got interruption from system call, ex. on signal
-                    $lastError = error_get_last();
-                    if ($lastError && $lastError['message']) {
-                        if (stripos($lastError['message'], 'interrupted system call') !== false){
-                            @trigger_error(''); // clear message
-                            continue;
-                        } else {
-                            throw new ReadEventException(
-                                'Error while waiting on stream',
-                                new \ErrorException($lastError['message'], 0, $lastError['type'], $lastError['file'], $lastError['line'])
-                            );
-                        }
-                    }
-                } elseif ($num_changed_streams > 0) {
-                    $channel->wait();
-                } else {
-                    break;
+    protected function doConsume(\Closure $callback, $timeout)
+    {
+        $channel = $this->getChannel();
+        $channel->basic_consume(
+            $this->queue,
+            '',
+            false, false, false, false,
+            function(AMQPMessage $message) use ($callback) {
+                /** @var $channel \PhpAmqpLib\Channel\AMQPChannel */
+                $channel = $message->delivery_info['channel'];
+                if (!$callback($channel, $message)) {// Stop consuming
+                    $channel->basic_cancel($message->delivery_info['consumer_tag']);
                 }
             }
-        } catch (\Exception $e) {
-            throw new ReadEventException('Exception while consuming', $e); // TODO: Throw another exception
+        );
+
+        while (count($channel->callbacks)) {
+            $read   = array($this->getConnection()->getSocket());
+            $write  = array();
+            $except = array();
+            if (false === ($num_changed_streams = @stream_select($read, $write, $except, $timeout))) {
+                $error = error_get_last();
+                if ($error && $error['message']) {
+                    // Check if we got interruption from system call, ex. on signal
+                    $this->checkStreamError($error);
+                    continue;
+                }
+            } elseif ($num_changed_streams > 0) {
+                $channel->wait();
+            } else {
+                break;
+            }
         }
     }
 
@@ -126,16 +125,14 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
      * @param callable $callback
      *
      * @return \Closure
-     * @throws \Che\EventBand\EventCallbackException
+     * @throws ReadEventException
+     * @throws EventCallbackException
      */
-    protected function getMessageCallback($callback)
+    private function getMessageCallback($callback)
     {
         if (!$this->messageCallback) {
             $serializer = $this->getSerializer();
-            $this->messageCallback = function (AMQPMessage $msg) use ($callback, $serializer) {
-                /** @var $channel \PhpAmqpLib\Channel\AMQPChannel */
-                $channel = $msg->delivery_info['channel'];
-
+            $this->messageCallback = function (AMQPChannel $channel, AMQPMessage $msg) use ($callback, $serializer) {
                 try {
                     $event = $serializer->deserializeEvent($msg->body);
                 } catch (SerializerException $e) {
@@ -159,5 +156,18 @@ class AmqpLibReader extends AmqpLibAdapter implements EventReader, EventConsumer
         }
 
         return $this->messageCallback;
+    }
+
+    private function checkStreamError($error)
+    {
+        if (stripos($error['message'], 'interrupted system call') !== false){
+            @trigger_error(''); // clear message
+            return;
+        } else {
+            throw new ReadEventException(
+                'Error while waiting on stream',
+                new \ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'])
+            );
+        }
     }
 }
