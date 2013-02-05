@@ -51,7 +51,7 @@ class PublishEventListenerTest extends TestCase
      */
     public function stopPropagation()
     {
-        $listener = new PublishEventListener($this->publisher, true);
+        $listener = new PublishEventListener($this->publisher, false);
         $event = new Event();
 
         $listener($event);
