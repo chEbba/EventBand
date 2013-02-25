@@ -7,27 +7,28 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 /**
- * Event consumer. Consume events from storage.
- * Consumer implements read loop internally.
+ * Extended event reader which can consume events from storage
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-interface EventConsumer
+interface EventConsumer extends EventReader
 {
     /**
      * Consume events and run event callback.
-     * This method can be blocking but should return if no events exist in timeout seconds
+     * This method can be blocking but should return if no events exist in timeout seconds.
+     * If callback fails event should be requeued.
      *
-     * @param callback $callback Event callback. If callback returns false consumption should be stopped.
+     * @param callable $callback Event callback. If callback returns false consumption should be stopped.
      *                           Signature: bool function(Event $event)
      * @param int      $timeout  Timeout in seconds (>= 0).
      *                           If not events occurs in $timeout seconds consumer should stop consumption.
      *
-     * @throws ReadEventException
+     * @throws ReadEventException     On errors while event consumption
+     * @throws EventCallbackException On exception in callback
      */
     public function consumeEvents($callback, $timeout);
 }

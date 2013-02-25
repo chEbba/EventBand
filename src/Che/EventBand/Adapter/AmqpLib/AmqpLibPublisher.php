@@ -9,10 +9,9 @@
 
 namespace Che\EventBand\Adapter\AmqpLib;
 
-use Che\EventBand\PublishEventException;
-use Che\EventBand\EventPublisher;
+use Che\EventBand\Publisher\EventPublisher;
+use Che\EventBand\Publisher\PublishEventException;
 use Che\EventBand\Serializer\EventSerializer;
-use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use Symfony\Component\EventDispatcher\Event;
 

@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AbstractPublishCommand extends Command
 {
     /**
-     * @return \Che\EventBand\EventPublisher
+     * @return \Che\EventBand\Publisher\EventPublisher
      */
     abstract protected function getPublisher();
 
@@ -25,11 +25,17 @@ abstract class AbstractPublishCommand extends Command
      */
     abstract protected function createEvent(InputInterface $input);
 
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this->setName('publish');
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $event = $this->createEvent($input);

@@ -7,7 +7,7 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 
 /**

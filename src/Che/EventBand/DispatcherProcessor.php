@@ -14,7 +14,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Processor based on EventDispatcher
  * Executes listeners on event
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>

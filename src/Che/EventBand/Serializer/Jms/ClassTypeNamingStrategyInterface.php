@@ -7,14 +7,15 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Serializer\Jms;
 
 /**
- * Base exception for load errors
+ * Description of ObjectTypeNamingStrategyInterface
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
- * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class LoadException extends \RuntimeException
+interface ClassTypeNamingStrategyInterface
 {
+    public function classToType($class);
+    public function typeToClass($type);
 }

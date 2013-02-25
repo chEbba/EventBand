@@ -7,37 +7,23 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 /**
- * Exception while loading processor
+ * Exception while loading subscriber
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class LoadProcessorException extends LoadException
+class ReaderLoadException extends \RuntimeException
 {
-    private $processorName;
-
     /**
-     * @param string          $name     Processor name
+     * @param string          $name     Subscriber name
      * @param string          $reason   Error reason
      * @param \Exception|null $previous Previous exception
      */
     public function __construct($name, $reason, \Exception $previous = null)
     {
-        $this->processorName = $name;
-
-        parent::__construct(sprintf('Processor "%s" can not be loaded: %s', $name, $reason), 0, $previous);
-    }
-
-    /**
-     * Get processor name
-     *
-     * @return string
-     */
-    public function getProcessorName()
-    {
-        return $this->processorName;
+        parent::__construct(sprintf('Reader "%s" can not be loaded: %s', $name, $reason), 0, $previous);
     }
 }

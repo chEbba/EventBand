@@ -2,10 +2,13 @@
 
 namespace Che\EventBand\Command;
 
-use Che\EventBand\EventReader;
+use Che\EventBand\Reader\EventConsumer;
+use Che\EventBand\Reader\EventReader;
+use Che\EventBand\Reader\EventReaderLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Description of EventReadCommand
@@ -17,9 +20,14 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
     /**
      * Get event reader
      *
-     * @return EventReader
+     * @return EventReaderLoader
      */
-    abstract protected function getReader();
+    abstract protected function getReaderLoader();
+
+    protected function getDefaultTimeout()
+    {
+        return 10;
+    }
 
     /**
      * {@inheritDoc}
@@ -28,20 +36,64 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
     {
         parent::configure();
 
-        $this->setName('read');
+        $this
+            ->addOption('consume', 'c', InputOption::VALUE_NONE, 'Use consume instead of read')
+            ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'timeout', $this->getDefaultTimeout());
+    }
+
+    protected function getInputTimeout(InputInterface $input)
+    {
+        $timeout = (int) $input->getOption('timeout');
+        if ($timeout < 0) {
+            throw new \InvalidArgumentException('Timeout is not a non-negative integer');
+        }
+
+        return $timeout;
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function doExecute($callback, InputInterface $input, OutputInterface $output)
+    protected function executeProcessor($processorName, InputInterface $input, OutputInterface $output)
+    {
+        $reader = $this->getReaderLoader()->loadReader($processorName);
+        $processor = $this->getProcessor($processorName);
+
+        if ($input->getOption('consume')) {
+            if (!$reader instanceof EventConsumer) {
+                throw new \InvalidArgumentException(sprintf('Reader "%s<%s>" does not support consume', $processorName, get_class($reader)));
+            }
+            $this->consumeEvents($reader, $processor, $input, $output);
+        } else {
+            $this->readEvents($reader, $processor, $input, $output);
+        }
+    }
+
+    protected function readEvents(EventReader $reader, $processor, InputInterface $input, OutputInterface $output)
     {
         while(true) {
-            if (!$this->getReader()->readEvent($callback)) {
+            if (!$reader->readEvent($processor)) {
                 sleep($this->getInputTimeout($input));
-                if (!$this->checkState()) {
+                if (!$this->isActive()) {
                     break;
                 }
+            }
+        }
+    }
+
+    protected function consumeEvents(EventConsumer $consumer, $processor, InputInterface $input, OutputInterface $output)
+    {
+        $self = $this;
+        $callback = function (Event $event) use ($self, $processor) {
+            call_user_func($processor, $event);
+
+            return $self->isActive();
+        };
+
+        while(true) {
+            $consumer->consumeEvents($callback, $this->getInputTimeout($input));
+            if (!$this->isActive()) {
+                break;
             }
         }
     }

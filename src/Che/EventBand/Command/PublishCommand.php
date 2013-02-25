@@ -2,16 +2,16 @@
 
 namespace Che\EventBand\Command;
 
+use Che\EventBand\Publisher\EventPublisher;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\EventDispatcher\Event;
+
 /**
  * Description of PublishCommand
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-use Che\EventBand\EventPublisher;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\EventDispatcher\Event;
-
 class PublishCommand extends AbstractPublishCommand
 {
     private $publisher;

@@ -7,23 +7,23 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 /**
- * Loader for event processors
+ * Load reader by name
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-interface EventProcessorLoader
+interface EventReaderLoader
 {
     /**
-     * Load processor by name
+     * Load event reader
      *
      * @param string $name
      *
-     * @return callback Signature: void function(Event $event)
-     * @throws LoadProcessorException
+     * @return EventReader
+     * @throws ReaderLoadException
      */
-    public function loadProcessor($name);
+    public function loadReader($name);
 }

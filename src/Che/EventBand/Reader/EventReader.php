@@ -7,7 +7,7 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 /**
  * Event reader. Reads events from storage.
@@ -20,12 +20,14 @@ interface EventReader
     /**
      * Read next event and executes callback
      * This method should not be blocking.
+     * If callback fails event should be requeued.
      *
-     * @param callback $callback Callback which should be executed on event.
+     * @param callable $callback Callback which should be executed on event.
      *                           Signature: void function(Event $event)
      *
      * @return bool True if event was read, false if no event exists
-     * @throws ReadEventException
+     * @throws ReadEventException     On read errors
+     * @throws EventCallbackException On exception in callback
      */
     public function readEvent($callback);
 }

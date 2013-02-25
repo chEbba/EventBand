@@ -7,25 +7,24 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Publisher;
 
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Loader for event publishers
+ * Event publisher. Publishes events to custom storage for later processing
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-interface EventPublisherLoader
+interface EventPublisher
 {
     /**
-     * Load publisher for event
+     * Publish event object
      *
      * @param Event $event
      *
-     * @return EventPublisher
-     * @throws LoadPublisherException
+     * @throws PublishEventException
      */
-    public function loadPublisherForEvent(Event $event);
+    public function publishEvent(Event $event);
 }

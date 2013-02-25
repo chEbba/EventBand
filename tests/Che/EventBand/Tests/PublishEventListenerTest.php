@@ -9,7 +9,7 @@
 
 namespace Che\EventBand\Tests;
 
-use Che\EventBand\PublishEventListener;
+use Che\EventBand\Publisher\PublishEventListener;
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -22,13 +22,13 @@ use Symfony\Component\EventDispatcher\Event;
 class PublishEventListenerTest extends TestCase
 {
     /**
-     * @var \Che\EventBand\EventPublisher|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Che\EventBand\Publisher\EventPublisher|\PHPUnit_Framework_MockObject_MockObject
      */
     private $publisher;
 
     protected function setUp()
     {
-        $this->publisher = $this->getMock('Che\EventBand\EventPublisher');
+        $this->publisher = $this->getMock('Che\EventBand\Publisher\EventPublisher');
     }
 
     /**

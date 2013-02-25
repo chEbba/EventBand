@@ -19,21 +19,13 @@ abstract class AbstractProcessCommand extends Command
     private $executed = false;
     private $signalsEnabled = false;
 
-    /**
-     * @return \Che\EventBand\EventProcessorLoader
-     */
-    abstract protected function getProcessorLoader();
+    abstract protected function executeProcessor($processorName, InputInterface $input, OutputInterface $output);
 
-    abstract protected function doExecute($callback, InputInterface $input, OutputInterface $output);
+    abstract protected function getProcessor($name);
 
     protected function getPredefinedProcessorName()
     {
         return null;
-    }
-
-    protected function getDefaultTimeout()
-    {
-        return 10;
     }
 
     public function start()
@@ -51,6 +43,21 @@ abstract class AbstractProcessCommand extends Command
         return $this->executed;
     }
 
+    public function isActive()
+    {
+        if (!$this->isExecuted()) {
+            return false;
+        }
+
+        if ($this->signalsEnabled) {
+            pcntl_signal_dispatch();
+
+            return $this->isExecuted();
+        }
+
+        return true;
+    }
+
     protected function configure()
     {
         $this->addOption('no-signals', null, InputOption::VALUE_NONE, 'Disable signal handling');
@@ -59,8 +66,6 @@ abstract class AbstractProcessCommand extends Command
         if (!$processorName) {
             $this->addArgument('name', InputArgument::REQUIRED, 'Name of processor');
         }
-
-        $this->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'timeout', $this->getDefaultTimeout());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -74,7 +79,7 @@ abstract class AbstractProcessCommand extends Command
             $this->registerSignals($output);
         }
 
-        $this->doExecute($this->getEventCallback($this->getProcessorName($input)), $input, $output);
+        $this->executeProcessor($processorName, $input, $output);
 
         $this->stop();
         $output->writeln(sprintf('Stopped %s.', $processorName));
@@ -85,28 +90,9 @@ abstract class AbstractProcessCommand extends Command
         return $this->getPredefinedProcessorName() ?: $input->getArgument('name');
     }
 
-    protected function getInputTimeout(InputInterface $input)
-    {
-        $timeout = (int) $input->getOption('timeout');
-        if ($timeout < 0) {
-            throw new \InvalidArgumentException('Timeout is not a non-negative integer');
-        }
-
-        return $timeout;
-    }
-
     protected function isSignalSupportEnabled(InputInterface $input)
     {
         return extension_loaded('pcntl') && !$input->getOption('no-signals');
-    }
-
-    protected function getEventCallback($name)
-    {
-        $processor = $this->getProcessorLoader()->loadProcessor($name);
-
-        return function (Event $event) use ($processor) {
-            call_user_func($processor, $event);
-        };
     }
 
     protected function registerSignals(OutputInterface $output)
@@ -125,20 +111,5 @@ abstract class AbstractProcessCommand extends Command
             $output->writeln('Got stop signal. Stopping...');
             $self->stop();
         };
-    }
-
-    public function checkState()
-    {
-        if (!$this->isExecuted()) {
-            return false;
-        }
-
-        if ($this->signalsEnabled) {
-            pcntl_signal_dispatch();
-
-            return $this->isExecuted();
-        }
-
-        return true;
     }
 }

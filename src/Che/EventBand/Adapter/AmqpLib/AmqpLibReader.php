@@ -9,10 +9,10 @@
 
 namespace Che\EventBand\Adapter\AmqpLib;
 
-use Che\EventBand\EventCallbackException;
-use Che\EventBand\EventConsumer;
-use Che\EventBand\EventReader;
-use Che\EventBand\ReadEventException;
+use Che\EventBand\Reader\EventCallbackException;
+use Che\EventBand\Reader\EventConsumer;
+use Che\EventBand\Reader\EventReader;
+use Che\EventBand\Reader\ReadEventException;
 use Che\EventBand\Serializer\EventSerializer;
 use Che\EventBand\Serializer\SerializerException;
 use PhpAmqpLib\Channel\AMQPChannel;

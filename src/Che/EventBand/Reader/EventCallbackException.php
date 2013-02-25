@@ -7,7 +7,7 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand;
+namespace Che\EventBand\Reader;
 
 use Symfony\Component\EventDispatcher\Event;
 
@@ -17,7 +17,7 @@ use Symfony\Component\EventDispatcher\Event;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class EventCallbackException extends ReadEventException
+class EventCallbackException extends \RuntimeException
 {
     private $callback;
     private $event;
