@@ -17,7 +17,10 @@ abstract class AbstractDispatchCommand extends AbstractReadCommand
 
     abstract protected function getDispatcher();
 
-    abstract protected function getPrefixTemplate();
+    protected function getPrefixTemplate()
+    {
+        return '';
+    }
 
     protected function getProcessor($name)
     {
