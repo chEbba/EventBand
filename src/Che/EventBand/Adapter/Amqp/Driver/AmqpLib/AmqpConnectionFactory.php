@@ -7,7 +7,7 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand\Adapter\AmqpLib;
+namespace Che\EventBand\Adapter\Amqp\Driver\AmqpLib;
 
 /**
  * php-amqplib connection factory

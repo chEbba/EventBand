@@ -38,7 +38,9 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
 
         $this
             ->addOption('consume', 'c', InputOption::VALUE_NONE, 'Use consume instead of read')
-            ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'timeout', $this->getDefaultTimeout());
+            ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'timeout', $this->getDefaultTimeout())
+            ->addOption('events', 'e', InputOption::VALUE_REQUIRED, 'Number of events', 0)
+        ;
     }
 
     protected function getInputTimeout(InputInterface $input)
@@ -71,12 +73,17 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
 
     protected function readEvents(EventReader $reader, $processor, InputInterface $input, OutputInterface $output)
     {
-        while(true) {
+        $events = $input->getOption('events');
+        $read = 0;
+        while(true && (!$events || ($read < $events)) ) {
             if (!$reader->readEvent($processor)) {
+                die;
                 sleep($this->getInputTimeout($input));
                 if (!$this->isActive()) {
                     break;
                 }
+            } else {
+                $read++;
             }
         }
     }

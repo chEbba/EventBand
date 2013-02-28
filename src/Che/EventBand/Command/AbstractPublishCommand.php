@@ -4,6 +4,7 @@ namespace Che\EventBand\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -30,7 +31,9 @@ abstract class AbstractPublishCommand extends Command
      */
     protected function configure()
     {
-        $this->setName('publish');
+        $this
+            ->setName('publish')
+            ->addOption('count', 'c', InputOption::VALUE_REQUIRED, 'Number of events', 1);
     }
 
     /**
@@ -38,9 +41,11 @@ abstract class AbstractPublishCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $event = $this->createEvent($input);
-        $this->getPublisher()->publishEvent($event);
+        for ($i = 0; $i < $input->getOption('count'); $i++) {
+            $event = $this->createEvent($input);
+            $this->getPublisher()->publishEvent($event);
 
-        $output->writeln(sprintf('Event was published: "%s".', $event->getName()));
+            $output->writeln(sprintf('Event #%d was published: "%s".', $i+1, $event->getName()));
+        }
     }
 }
