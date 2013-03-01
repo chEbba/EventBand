@@ -170,18 +170,6 @@ class AmqpLibDriver implements AmqpDriver
         }
     }
 
-    protected function closeChannel()
-    {
-        if (!$this->channel) {
-            return false;
-        }
-
-        $this->channel->close();
-        $this->channel = null;
-
-        return true;
-    }
-
     protected static function createDelivery(AmqpLibMessage $msg, $queue)
     {
         $propertyNames = array(
@@ -215,23 +203,5 @@ class AmqpLibDriver implements AmqpDriver
             $msg->delivery_info['routing_key'],
             $msg->delivery_info['redelivered']
         );
-    }
-
-    protected function checkStreamError(array $error)
-    {
-        // Check if cleared error
-        if (!$error['message']) {
-            return;
-        }
-
-
-    }
-
-    /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        $this->closeChannel();
     }
 }
