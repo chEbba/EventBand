@@ -9,13 +9,17 @@
 
 namespace Che\EventBand\Adapter\Amqp\Driver\PeclAmqp;
 
+use Che\EventBand\Adapter\Amqp\Definition\ConnectionDefinition;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpDriver;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpMessage;
+use Che\EventBand\Adapter\Amqp\Driver\DriverException;
 use Che\EventBand\Adapter\Amqp\Driver\MessageDelivery;
 use Che\EventBand\Adapter\Amqp\Driver\MessagePublication;
 
 /**
  * Description of PeclAmqpDriver
+ *
+ * TODO: proper exceptions
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
@@ -27,9 +31,15 @@ class PeclAmqpDriver implements AmqpDriver
     private $exchanges = array();
     private $queues = array();
 
-    public function __construct(\AMQPConnection $connection)
+    public function __construct(ConnectionDefinition $connectionDefinition)
     {
-        $this->connection = $connection;
+        $this->connection = new \AMQPConnection(array(
+            'host' => $connectionDefinition->getHost(),
+            'port' => $connectionDefinition->getPort(),
+            'login' => $connectionDefinition->getUser(),
+            'password' => $connectionDefinition->getPassword(),
+            'vhost' => $connectionDefinition->getVirtualHost()
+        ));
     }
 
     protected function getChannel()
@@ -108,14 +118,13 @@ class PeclAmqpDriver implements AmqpDriver
         try {
             $this->getQueue($queue)->consume(function (\AMQPEnvelope $envelope) use ($callback, $queue, $oldTimeout) {
                 $result = $callback(self::createDelivery($envelope, $queue));
-                if (!$result) {
-                    $this->connection->setTimeout($oldTimeout);
-                }
 
                 return $result;
             });
+            $this->connection->setTimeout($oldTimeout);
         } catch (\AMQPConnectionException $e) {
             $this->connection->setTimeout($oldTimeout);
+
             $expectedErrors = array('interrupted system call', 'resource temporarily unavailable');
             foreach ($expectedErrors as $expectedError) {
                 if (stripos($e->getMessage(), $expectedError) !== false) {
@@ -123,7 +132,7 @@ class PeclAmqpDriver implements AmqpDriver
                 }
             }
 
-            return;
+            throw new DriverException('Unexpected error while consuming', $e);
         }
     }
 
@@ -140,7 +149,7 @@ class PeclAmqpDriver implements AmqpDriver
     protected static function createDelivery(\AMQPEnvelope $envelope, $queue)
     {
         return new MessageDelivery(
-            new AmqpMessage($envelope->getBody()),
+            new AmqpMessage($envelope->getBody()), // TODO: properties
             $envelope->getDeliveryTag(),
             $envelope->getExchangeName(),
             $queue,

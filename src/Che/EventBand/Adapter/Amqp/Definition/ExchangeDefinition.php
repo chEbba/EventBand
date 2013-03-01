@@ -7,7 +7,7 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand\Adapter\Amqp\Driver;
+namespace Che\EventBand\Adapter\Amqp\Definition;
 
 /**
  * Description of ExchangeDefinition
@@ -17,11 +17,14 @@ namespace Che\EventBand\Adapter\Amqp\Driver;
  */
 interface ExchangeDefinition
 {
+    const TYPE_DIRECT = 'direct';
+    const TYPE_FANOUT = 'fanout';
+    const TYPE_HEADER = 'header';
+    const TYPE_TOPIC = 'topic';
+
     public function getName();
 
     public function getType();
-
-    public function isPassive();
 
     public function isDurable();
 
@@ -29,5 +32,5 @@ interface ExchangeDefinition
 
     public function isInternal();
 
-    public function getExchangeBindings();
+    public function getBindings();
 }

@@ -9,11 +9,13 @@
 
 namespace Che\EventBand\Adapter\Amqp\Driver\AmqpLib;
 
+use Che\EventBand\Adapter\Amqp\Definition\ConnectionDefinition;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpDriver;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpMessage;
 use Che\EventBand\Adapter\Amqp\Driver\DriverException;
 use Che\EventBand\Adapter\Amqp\Driver\MessageDelivery;
 use Che\EventBand\Adapter\Amqp\Driver\MessagePublication;
+use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Message\AMQPMessage as AmqpLibMessage;
 
 /**
@@ -24,9 +26,9 @@ use PhpAmqpLib\Message\AMQPMessage as AmqpLibMessage;
  */
 class AmqpLibDriver implements AmqpDriver
 {
-    private $connectionFactory;
+    private $connectionDefinition;
     /**
-     * @var \PhpAmqpLib\Connection\AMQPConnection
+     * @var AMQPConnection
      */
     private $connection;
     /**
@@ -34,20 +36,26 @@ class AmqpLibDriver implements AmqpDriver
      */
     private $channel;
 
-    public function __construct(AmqpConnectionFactory $connectionFactory)
+    public function __construct(ConnectionDefinition $connectionDefinition)
     {
-        $this->connectionFactory = $connectionFactory;
+        $this->connectionDefinition = $connectionDefinition;
     }
 
     /**
      * Get connection
      *
-     * @return \PhpAmqpLib\Connection\AMQPConnection
+     * @return AMQPConnection
      */
     protected function getConnection()
     {
         if (!$this->connection) {
-            $this->connection = $this->connectionFactory->getConnection();
+            $this->connection = new AMQPConnection(
+                $this->connectionDefinition->getHost(),
+                $this->connectionDefinition->getPort(),
+                $this->connectionDefinition->getUser(),
+                $this->connectionDefinition->getPassword(),
+                $this->connectionDefinition->getVirtualHost()
+            );
         }
 
         return $this->connection;
