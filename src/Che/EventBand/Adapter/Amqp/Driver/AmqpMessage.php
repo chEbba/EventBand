@@ -17,24 +17,29 @@ namespace Che\EventBand\Adapter\Amqp\Driver;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class AmqpMessage 
+interface AmqpMessage
 {
-    private $body;
-    private $properties;
+    public function getBody();
 
-    public function __construct($body, array $properties = array())
-    {
-        $this->body = $body;
-        $this->properties = $properties;
-    }
+    public function getHeaders();
 
-    public function getBody()
-    {
-        return $this->body;
-    }
+    public function getContentType();
 
-    public function getProperties()
-    {
-        return $this->properties;
-    }
+    public function getContentEncoding();
+
+    public function getMessageId();
+
+    public function getAppId();
+
+    public function getUserId();
+
+    public function getPriority();
+
+    public function getTimestamp();
+
+    public function getExpiration();
+
+    public function getType();
+
+    public function getReplyTo();
 }

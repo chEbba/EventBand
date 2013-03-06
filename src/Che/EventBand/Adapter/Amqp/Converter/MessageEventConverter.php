@@ -9,7 +9,7 @@
 
 namespace Che\EventBand\Adapter\Amqp\Converter;
 
-use Che\EventBand\Adapter\Amqp\Driver\MessageDelivery;
+use Che\EventBand\Adapter\Amqp\Driver\AmqpMessage;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -23,14 +23,14 @@ interface MessageEventConverter
     /**
      * @param Event $event
      *
-     * @return \Che\EventBand\Adapter\Amqp\Driver\MessagePublication
+     * @return AmqpMessage
      */
-    public function createEventPublication(Event $event);
+    public function eventToMessage(Event $event);
 
     /**
-     * @param MessageDelivery $delivery
+     * @param AmqpMessage $message
      *
      * @return Event
      */
-    public function createDeliveryEvent(MessageDelivery $delivery);
+    public function messageToEvent(AmqpMessage $message);
 }

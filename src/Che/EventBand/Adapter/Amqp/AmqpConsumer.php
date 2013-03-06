@@ -9,7 +9,7 @@
 
 namespace Che\EventBand\Adapter\Amqp;
 
-use Che\EventBand\Adapter\Amqp\Converter\DeliveryConversionException;
+use Che\EventBand\Adapter\Amqp\Converter\MessageConversionException;
 use Che\EventBand\Adapter\Amqp\Converter\MessageEventConverter;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpDriver;
 use Che\EventBand\Adapter\Amqp\Driver\MessageDelivery;
@@ -56,10 +56,11 @@ class AmqpConsumer implements EventConsumer
      */
     public function consumeEvents($callback, $timeout)
     {
+        $self = $this;
         $this->driver->consume(
             $this->queue,
-            function (MessageDelivery $delivery) use ($callback) {
-                return $this->processDelivery($delivery, $callback);
+            function (MessageDelivery $delivery) use ($callback, $self) {
+                return $self->processDelivery($delivery, $callback);
             },
             $timeout
         );
@@ -71,8 +72,8 @@ class AmqpConsumer implements EventConsumer
         $driver = $this->driver;
 
         try {
-            $event = $converter->createDeliveryEvent($delivery);
-        } catch (DeliveryConversionException $e) {
+            $event = $converter->messageToEvent($delivery->getMessage());
+        } catch (MessageConversionException $e) {
             $driver->reject($delivery);
 
             throw new ReadEventException('Error on event conversion', $e);

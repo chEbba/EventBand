@@ -96,7 +96,7 @@ class PeclAmqpDriver implements AmqpDriver
             $publication->getMessage()->getBody(),
             $publication->getRoutingKey(),
             $flags,
-            $publication->getMessage()->getProperties()
+            PeclAmqpMessage::getMessageAttributes($publication->getMessage())
         );
     }
 
@@ -107,7 +107,7 @@ class PeclAmqpDriver implements AmqpDriver
             return null;
         }
 
-        return $this->createDelivery($envelope, $queue);
+        return PeclAmqpMessage::createDelivery($envelope, $queue);
     }
 
     public function consume($queue, \Closure $callback, $timeout)
@@ -117,7 +117,7 @@ class PeclAmqpDriver implements AmqpDriver
 
         try {
             $this->getQueue($queue)->consume(function (\AMQPEnvelope $envelope) use ($callback, $queue, $oldTimeout) {
-                $result = $callback(self::createDelivery($envelope, $queue));
+                $result = $callback(PeclAmqpMessage::createDelivery($envelope, $queue));
 
                 return $result;
             });
@@ -144,17 +144,5 @@ class PeclAmqpDriver implements AmqpDriver
     public function reject(MessageDelivery $delivery)
     {
         $this->getQueue($delivery->getQueue())->nack($delivery->getTag(), AMQP_REQUEUE);
-    }
-
-    protected static function createDelivery(\AMQPEnvelope $envelope, $queue)
-    {
-        return new MessageDelivery(
-            new AmqpMessage($envelope->getBody()), // TODO: properties
-            $envelope->getDeliveryTag(),
-            $envelope->getExchangeName(),
-            $queue,
-            $envelope->getRoutingKey(),
-            $envelope->isRedelivery()
-        );
     }
 }

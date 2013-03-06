@@ -11,7 +11,6 @@ namespace Che\EventBand\Adapter\Amqp\Driver\AmqpLib;
 
 use Che\EventBand\Adapter\Amqp\Definition\ConnectionDefinition;
 use Che\EventBand\Adapter\Amqp\Driver\AmqpDriver;
-use Che\EventBand\Adapter\Amqp\Driver\AmqpMessage;
 use Che\EventBand\Adapter\Amqp\Driver\DriverException;
 use Che\EventBand\Adapter\Amqp\Driver\MessageDelivery;
 use Che\EventBand\Adapter\Amqp\Driver\MessagePublication;
@@ -77,10 +76,9 @@ class AmqpLibDriver implements AmqpDriver
 
     public function publish(MessagePublication $publication, $exchange)
     {
-        $msg = $publication->getMessage();
         try {
             $this->getChannel()->basic_publish(
-                new AmqpLibMessage($msg->getBody(), $msg->getProperties()),
+                AmqpLibCustomMessage::createAmqpLibMessage($publication->getMessage()),
                 $exchange,
                 $publication->getRoutingKey(),
                 $publication->isMandatory(),
@@ -104,7 +102,7 @@ class AmqpLibDriver implements AmqpDriver
             return null;
         }
 
-        return $this->createDelivery($msg, $queue);
+        return AmqpLibCustomMessage::createDelivery($msg, $queue);
     }
 
     public function consume($queue, \Closure $callback, $timeout)
@@ -116,7 +114,7 @@ class AmqpLibDriver implements AmqpDriver
                 '',
                 false, false, false, false,
                 function(AMQPLibMessage $msg) use ($callback, $channel, $queue) {
-                    if (!$callback($this->createDelivery($msg, $queue))) {// Stop consuming
+                    if (!$callback(AmqpLibCustomMessage::createDelivery($msg, $queue))) {// Stop consuming
                         $channel->basic_cancel($msg->delivery_info['consumer_tag']);
                     }
                 }
@@ -168,40 +166,5 @@ class AmqpLibDriver implements AmqpDriver
         } catch (\Exception $e) {
             throw new DriverException('Basic reject error', $e);
         }
-    }
-
-    protected static function createDelivery(AmqpLibMessage $msg, $queue)
-    {
-        $propertyNames = array(
-            'content_type',
-            "content_encoding",
-            "application_headers",
-            "delivery_mode",
-            "priority",
-            "correlation_id",
-            "reply_to",
-            "expiration",
-            "message_id",
-            "timestamp",
-            "type",
-            "user_id",
-            "app_id",
-            "cluster_id"
-        );
-        $properties = array();
-        foreach ($propertyNames as $name) {
-            if ($msg->has($name)) {
-                $properties[$name] = $msg->get($name);
-            }
-        }
-
-        return new MessageDelivery(
-            new AmqpMessage($msg->body, $properties),
-            $msg->delivery_info['delivery_tag'],
-            $msg->delivery_info['exchange'],
-            $queue,
-            $msg->delivery_info['routing_key'],
-            $msg->delivery_info['redelivered']
-        );
     }
 }

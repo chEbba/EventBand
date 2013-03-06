@@ -18,16 +18,19 @@ namespace Che\EventBand\Adapter\Amqp\Driver;
 class MessagePublication
 {
     private $message;
+    private $persistent;
     private $routingKey;
     private $mandatory;
     private $immediate;
 
-    public function __construct(AmqpMessage $message, $routingKey = '', $immediate = false, $mandatory = false)
+    public function __construct(AmqpMessage $message, $routingKey = '', $persistent = true,
+                                $mandatory = false, $immediate = false)
     {
         $this->message = $message;
-        $this->routingKey = $routingKey;
-        $this->immediate = $immediate;
-        $this->mandatory = $mandatory;
+        $this->routingKey = (string) $routingKey;
+        $this->persistent = (bool) $persistent;
+        $this->mandatory = (bool) $mandatory;
+        $this->immediate = (bool) $immediate;
     }
 
     public function getMessage()
@@ -38,6 +41,11 @@ class MessagePublication
     public function getRoutingKey()
     {
         return $this->routingKey;
+    }
+
+    public function isPersistent()
+    {
+        return $this->persistent;
     }
 
     public function isMandatory()
