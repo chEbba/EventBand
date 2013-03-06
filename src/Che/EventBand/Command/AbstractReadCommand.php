@@ -77,7 +77,6 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
         $read = 0;
         while(true && (!$events || ($read < $events)) ) {
             if (!$reader->readEvent($processor)) {
-                die;
                 sleep($this->getInputTimeout($input));
                 if (!$this->isActive()) {
                     break;
