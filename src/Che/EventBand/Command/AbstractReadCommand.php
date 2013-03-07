@@ -17,6 +17,9 @@ use Symfony\Component\EventDispatcher\Event;
  */
 abstract class AbstractReadCommand extends AbstractProcessCommand
 {
+    private $eventsRead = 0;
+    private $eventsLimit = 0;
+
     /**
      * Get event reader
      *
@@ -29,6 +32,12 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
         return 10;
     }
 
+    public function isActive()
+    {
+        return parent::isActive() && (!$this->eventsLimit || $this->eventsRead < $this->eventsLimit);
+    }
+
+
     /**
      * {@inheritDoc}
      */
@@ -37,9 +46,9 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
         parent::configure();
 
         $this
-            ->addOption('consume', 'c', InputOption::VALUE_NONE, 'Use consume instead of read')
-            ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'timeout', $this->getDefaultTimeout())
-            ->addOption('events', 'e', InputOption::VALUE_REQUIRED, 'Number of events', 0)
+            ->addOption('no-consume', null, InputOption::VALUE_NONE, 'Force using read instead of consume')
+            ->addOption('timeout', 't', InputOption::VALUE_REQUIRED, 'Timeout to wait when no events exist', $this->getDefaultTimeout())
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Limit of events to be processed', 0)
         ;
     }
 
@@ -58,49 +67,46 @@ abstract class AbstractReadCommand extends AbstractProcessCommand
      */
     protected function executeProcessor($processorName, InputInterface $input, OutputInterface $output)
     {
+        $this->eventsRead = 0;
+        $this->eventsLimit =  $input->getOption('limit');
+
         $reader = $this->getReaderLoader()->loadReader($processorName);
         $processor = $this->getProcessor($processorName);
+        $eventsRead = &$this->eventsRead;
+        $processor = function (Event $event) use ($processor, &$eventsRead) {
+            call_user_func($processor, $event);
+            $eventsRead++;
+        };
 
-        if ($input->getOption('consume')) {
-            if (!$reader instanceof EventConsumer) {
-                throw new \InvalidArgumentException(sprintf('Reader "%s<%s>" does not support consume', $processorName, get_class($reader)));
-            }
-            $this->consumeEvents($reader, $processor, $input, $output);
+        $timeout = $this->getInputTimeout($input);
+
+        if ($reader instanceof EventConsumer && !$input->getOption('no-consume')) {
+            $this->consumeEvents($reader, $processor, $timeout, $output);
         } else {
-            $this->readEvents($reader, $processor, $input, $output);
+            $this->readEvents($reader, $processor, $timeout, $output);
         }
     }
 
-    protected function readEvents(EventReader $reader, $processor, InputInterface $input, OutputInterface $output)
+    protected function readEvents(EventReader $reader, \Closure $processor, $timeout, OutputInterface $output)
     {
-        $events = $input->getOption('events');
-        $read = 0;
-        while(true && (!$events || ($read < $events)) ) {
+        while ($this->isActive()) {
             if (!$reader->readEvent($processor)) {
-                sleep($this->getInputTimeout($input));
-                if (!$this->isActive()) {
-                    break;
-                }
-            } else {
-                $read++;
+                sleep($timeout);
             }
         }
     }
 
-    protected function consumeEvents(EventConsumer $consumer, $processor, InputInterface $input, OutputInterface $output)
+    protected function consumeEvents(EventConsumer $consumer, \Closure $processor, $timeout, OutputInterface $output)
     {
         $self = $this;
         $callback = function (Event $event) use ($self, $processor) {
-            call_user_func($processor, $event);
+            $processor($event);
 
             return $self->isActive();
         };
 
-        while(true) {
-            $consumer->consumeEvents($callback, $this->getInputTimeout($input));
-            if (!$this->isActive()) {
-                break;
-            }
+        while ($this->isActive()) {
+            $consumer->consumeEvents($callback, $timeout);
         }
     }
 }
