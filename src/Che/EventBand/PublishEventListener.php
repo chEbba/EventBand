@@ -7,8 +7,9 @@
  * with this package in the file LICENSE.
  */
 
-namespace Che\EventBand\Publisher;
+namespace Che\EventBand;
 
+use Che\EventBand\Publisher\EventPublisher;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
