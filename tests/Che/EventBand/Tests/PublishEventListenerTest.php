@@ -9,7 +9,7 @@
 
 namespace Che\EventBand\Tests;
 
-use Che\EventBand\Publisher\PublishEventListener;
+use Che\EventBand\PublishEventListener;
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\EventDispatcher\Event;
 
