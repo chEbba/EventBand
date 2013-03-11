@@ -15,6 +15,7 @@ use Che\EventBand\Adapter\Amqp\Driver\DriverException;
 use Che\EventBand\Adapter\Amqp\Driver\MessagePublication;
 use Che\EventBand\Publisher\EventPublisher;
 use Che\EventBand\Publisher\PublishEventException;
+use Che\EventBand\Routing\EventRouter;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -28,17 +29,19 @@ class AmqpPublisher implements EventPublisher
     private $driver;
     private $converter;
     private $exchange;
-    private $routingKey;
+    private $routingKeyRouter;
     private $persistent;
     private $mandatory;
     private $immediate;
 
-    public function __construct(AmqpDriver $driver, MessageEventConverter $converter, $exchange, $routingKey = null,
-                                $persistent = true, $mandatory = false, $immediate = false)
+    public function __construct(AmqpDriver $driver, MessageEventConverter $converter, $exchange,
+                                EventRouter $routingKeyRouter = null, $persistent = true,
+                                $mandatory = false, $immediate = false)
     {
         $this->driver = $driver;
         $this->converter = $converter;
         $this->exchange = $exchange;
+        $this->routingKeyRouter = $routingKeyRouter;
         $this->persistent = $persistent;
         $this->mandatory = $mandatory;
         $this->immediate = $immediate;
@@ -72,6 +75,6 @@ class AmqpPublisher implements EventPublisher
 
     protected function getEventRoutingKey(Event $event)
     {
-        return $this->routingKey === null ? $event->getName(): $this->routingKey;
+        return $this->routingKeyRouter ? $this->routingKeyRouter->routeEvent($event) : '';
     }
 }
