@@ -1,5 +1,5 @@
 {
-    "name": "event-band/framework",
+    "name": "event-band/band-framework",
     "description": "Asynchronous event dispatching",
     "keywords": ["event", "dispatcher", "queue", "async", "asynchronous", "message"],
     "homepage": "http://github.com/chEbba/EventBand",
