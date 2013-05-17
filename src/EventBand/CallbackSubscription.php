@@ -15,33 +15,15 @@ namespace EventBand;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class CallbackSubscription implements Subscription
+class CallbackSubscription extends AbstractSubscription
 {
-    private $eventName;
-    private $band;
     private $callback;
 
-    public function __construct($eventName, callable $callback, $band = '')
+    public function __construct($eventName, callable $callback, $band = null)
     {
-        $this->eventName = $eventName;
         $this->callback = $callback;
-        $this->band = (string) $band;
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getEventName()
-    {
-        return $this->eventName;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getBand()
-    {
-        return $this->band;
+        parent::__construct($eventName, $band);
     }
 
     /**
