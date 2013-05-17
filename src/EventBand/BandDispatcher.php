@@ -39,4 +39,19 @@ interface BandDispatcher
      * @param Subscription $subscription
      */
     public function unsubscribe(Subscription $subscription);
+
+    /**
+     * Get list of subscriptions
+     *
+     * @return Subscription[]|\Iterator
+     */
+    public function getSubscriptions();
+
+    /**
+     * @param Subscription $subscription
+     *
+     * @return int
+     * @throws \OutOfBoundsException
+     */
+    public function getSubscriptionPriority(Subscription $subscription);
 }
