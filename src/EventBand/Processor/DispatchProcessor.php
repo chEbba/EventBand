@@ -75,7 +75,8 @@ class DispatchProcessor
 
             $dispatchStop = new DispatchStopEvent($event);
             $this->dispatcher->dispatchEvent($dispatchStop);
-            $dispatching = $dispatchStop->isDispatching();
+
+            return $dispatchStop->isDispatching();
         };
     }
 }
