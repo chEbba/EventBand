@@ -12,10 +12,9 @@ namespace EventBand\Processor;
 use EventBand\Event;
 use EventBand\BandDispatcher;
 use EventBand\Transport\EventConsumer;
-use EventBand\Transport\EventReader;
 
 /**
- * Description of EventProcessor
+ * Process consumed events through dispatcher
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
@@ -27,6 +26,12 @@ class DispatchProcessor
     private $timeout;
     private $band;
 
+    /**
+     * @param BandDispatcher $dispatcher Dispatcher
+     * @param EventConsumer  $consumer   Consumer
+     * @param string         $band       Name of band for dispatcher
+     * @param int            $timeout    Timeout in second for consumer
+     */
     public function __construct(BandDispatcher $dispatcher, EventConsumer $consumer, $band, $timeout)
     {
         $this->dispatcher = $dispatcher;
@@ -44,6 +49,9 @@ class DispatchProcessor
         $this->timeout = $timeout;
     }
 
+    /**
+     * Process events
+     */
     public function process()
     {
         $dispatching = true;
@@ -75,8 +83,9 @@ class DispatchProcessor
 
             $dispatchStop = new DispatchStopEvent($event);
             $this->dispatcher->dispatchEvent($dispatchStop);
+            $dispatching = $dispatchStop->isDispatching();
 
-            return $dispatchStop->isDispatching();
+            return $dispatching;
         };
     }
 }
