@@ -50,7 +50,7 @@ class DispatchProcessor
 
         $this->dispatcher->dispatchEvent(new ProcessStartEvent());
 
-        $dispatchCallback = $this->getDispatchCallback($this->band, $dispatching);
+        $dispatchCallback = $this->getDispatchCallback($dispatching);
 
         while ($dispatching) {
             $this->consumer->consumeEvents($dispatchCallback, $this->timeout);
