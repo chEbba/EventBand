@@ -18,17 +18,15 @@ class ClassUtils
      *  $class          'VendorPackage\\Foo\\BarEvent'
      *  $nsSeparator    '.'
      *  $wordSeparator  '_'
-     *  $suffix         'event'
-     *  result:         vendor_package.foo.bar
+     *  result:         vendor_package.foo.bar_event
      *
      * @param string $class
      * @param string $nsSeparator
      * @param string $wordSeparator
-     * @param string $suffix
      *
      * @return string Converted name
      */
-    public static function classToName($class, $nsSeparator = '.', $wordSeparator = '_', $suffix = '')
+    public static function classToName($class, $nsSeparator = '.', $wordSeparator = '_')
     {
         // TODO: parameter validation and conversion
 
@@ -39,12 +37,22 @@ class ClassUtils
             strtr($class, '\\', $nsSeparator)
         ));
 
-        // Remove suffix if set and exists in string
-        if (!empty($suffix) && substr($name, -1 * strlen($suffix)) === $suffix) {
-            $name = substr($name, 0, -1 * strlen($suffix));
-            $name = rtrim($name, "{$nsSeparator}{$wordSeparator}");
+        return $name;
+    }
+
+    public static function nameToClass($name, $nsSeparator = '.', $wordSeparator = '_', $suffix = '')
+    {
+        if (!empty($suffix)) {
+            $name .= $wordSeparator . $suffix;
         }
 
-        return $name;
+        $pattern = sprintf('/(^|%s|%s)+(.)/', preg_quote($wordSeparator, '/'), preg_quote($nsSeparator, '/'));
+        return preg_replace_callback(
+            $pattern,
+            function ($match) use ($nsSeparator) {
+                return ($nsSeparator === $match[1] ? '\\' : '').strtoupper($match[2]);
+            },
+            $name
+        );
     }
 }

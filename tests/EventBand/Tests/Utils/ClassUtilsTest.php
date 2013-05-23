@@ -22,9 +22,21 @@ class ClassUtilsTest extends TestCase
      * @param string $className
      * @param string $convertedName
      */
-    public function classNameConversion($className, $convertedName)
+    public function classToNameConversion($className, $convertedName)
     {
-        $this->assertEquals($convertedName, ClassUtils::classToName($className, '/', '-', 'suffix'));
+        $this->assertEquals($convertedName, ClassUtils::classToName($className, '/', '-'));
+    }
+
+    /**
+     * @test name to class conversion
+     * @dataProvider classNames
+     *
+     * @param string $className
+     * @param string $convertedName
+     */
+    public function nameToClassConversion($className, $convertedName)
+    {
+        $this->assertEquals($className, ClassUtils::nameToClass($convertedName, '/', '-'));
     }
 
     /**
@@ -36,8 +48,7 @@ class ClassUtilsTest extends TestCase
             ['Foo\Ns\Class', 'foo/ns/class'],
             ['FooBar\Ns\Class', 'foo-bar/ns/class'],
             ['FooBar\Ns\ClassName', 'foo-bar/ns/class-name'],
-            ['FooBar\Ns\Class35Name', 'foo-bar/ns/class35-name'],
-            ['FooBar\Ns\ClassNameSuffix', 'foo-bar/ns/class-name'],
+            ['FooBar\Ns\Class35Name', 'foo-bar/ns/class35-name']
         ];
     }
 }

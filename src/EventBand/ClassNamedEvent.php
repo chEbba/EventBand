@@ -40,9 +40,29 @@ abstract class ClassNamedEvent implements Event
     {
         $class = get_called_class();
         if (!isset(self::$names[$class])) {
-            self::$names[$class] = ClassUtils::classToName($class, '.', '_', self::IGNORED_SUFFIX);
+            self::$names[$class] = self::generateName($class);
         }
 
         return self::$names[$class];
+    }
+
+    /**
+     * Generate event name based on class
+     *
+     * @param string $class
+     *
+     * @return string
+     */
+    public static function generateName($class)
+    {
+        $name = ClassUtils::classToName($class, '.', '_', self::IGNORED_SUFFIX);
+
+        // Remove suffix
+        if (substr($name, -1 * strlen(self::IGNORED_SUFFIX)) === self::IGNORED_SUFFIX) {
+            $name = substr($name, 0, -1 * strlen(self::IGNORED_SUFFIX));
+            $name = rtrim($name, '._');
+        }
+
+        return $name;
     }
 }
