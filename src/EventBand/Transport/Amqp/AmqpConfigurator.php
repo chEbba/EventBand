@@ -49,9 +49,21 @@ class AmqpConfigurator implements TransportConfigurator
             foreach ($definition->getExchanges() as $exchange) {
                 $this->driver->declareExchange($exchange);
             }
+            foreach ($definition->getExchanges() as $exchange) {
+                foreach ($exchange->getBindings() as $source => $routingKeys) {
+                    foreach ($routingKeys as $routingKey) {
+                        $this->driver->bindExchange($source, $exchange->getName(), $routingKey);
+                    }
+                }
+            }
 
             foreach ($definition->getQueues() as $queue) {
                 $this->driver->declareQueue($queue);
+                foreach ($queue->getBindings() as $exchange => $routingKeys) {
+                    foreach ($routingKeys as $routingKey) {
+                        $this->driver->bindQueue($exchange, $queue->getName(), $routingKey);
+                    }
+                }
             }
         } catch (DriverException $e) {
             throw new ConfiguratorException('Driver error on declare', 0, $e);
