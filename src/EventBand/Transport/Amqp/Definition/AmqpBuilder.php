@@ -34,11 +34,6 @@ class AmqpBuilder implements AmqpDefinition
        return $this->connection;
     }
 
-    public function getConnection()
-    {
-        return $this->connection;
-    }
-
     /**
      * @param string $name
      * @param string $type

@@ -18,11 +18,12 @@ namespace EventBand\Transport\Amqp\Definition;
 interface AmqpDefinition
 {
     /**
-     * @return ConnectionDefinition
+     * @return ExchangeDefinition[]
      */
-    public function getConnection();
-
     public function getExchanges();
 
+    /**
+     * @return QueueDefinition[]
+     */
     public function getQueues();
 }

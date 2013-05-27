@@ -9,6 +9,9 @@
 
 namespace EventBand\Transport\Amqp\Driver;
 
+use EventBand\Transport\Amqp\Definition\ExchangeDefinition;
+use EventBand\Transport\Amqp\Definition\QueueDefinition;
+
 /**
  * Description of AmqpAdapter
  *
@@ -24,4 +27,8 @@ interface AmqpDriver
     public function ack(MessageDelivery $delivery);
 
     public function reject(MessageDelivery $delivery);
+
+    public function declareExchange(ExchangeDefinition $exchange);
+
+    public function declareQueue(QueueDefinition $queue);
 }
