@@ -52,7 +52,7 @@ class AmqpConfigurator implements TransportConfigurator
             foreach ($definition->getExchanges() as $exchange) {
                 foreach ($exchange->getBindings() as $source => $routingKeys) {
                     foreach ($routingKeys as $routingKey) {
-                        $this->driver->bindExchange($source, $exchange->getName(), $routingKey);
+                        $this->driver->bindExchange($exchange->getName(), $source, $routingKey);
                     }
                 }
             }
@@ -61,7 +61,7 @@ class AmqpConfigurator implements TransportConfigurator
                 $this->driver->declareQueue($queue);
                 foreach ($queue->getBindings() as $exchange => $routingKeys) {
                     foreach ($routingKeys as $routingKey) {
-                        $this->driver->bindQueue($exchange, $queue->getName(), $routingKey);
+                        $this->driver->bindQueue($queue->getName(), $exchange, $routingKey);
                     }
                 }
             }

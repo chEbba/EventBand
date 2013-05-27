@@ -131,8 +131,8 @@ class AmqpConfiguratorTest extends TestCase
                 $args = func_get_args();
                 $this->assertEquals(2, $exchanges);
 
-                $this->assertTrue($args === ['exchange2', 'exchange1', 'routing2']
-                        || $args === ['exchange1', 'exchange2', 'routing1']);
+                $this->assertTrue($args === ['exchange1', 'exchange2', 'routing2']
+                        || $args === ['exchange2', 'exchange1', 'routing1']);
             }))
         ;
 
@@ -172,10 +172,10 @@ class AmqpConfiguratorTest extends TestCase
             ->method('bindQueue')
             ->will($this->returnCallback(function () use (&$queues) {
                 $args = func_get_args();
-                $this->assertTrue($args === ['exchange1', 'queue1', 'routing1']
-                    || $args === ['exchange2', 'queue2', 'routing2']);
+                $this->assertTrue($args === ['queue1', 'exchange1', 'routing1']
+                    || $args === [ 'queue2', 'exchange2', 'routing2']);
 
-                $this->assertContains($args[1], $queues);
+                $this->assertContains($args[0], $queues);
             }))
         ;
 

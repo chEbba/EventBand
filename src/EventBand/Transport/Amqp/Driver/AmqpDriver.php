@@ -30,9 +30,9 @@ interface AmqpDriver
 
     public function declareExchange(ExchangeDefinition $exchange);
 
-    public function bindExchange($source, $target, $routingKey = '');
+    public function bindExchange($target, $source, $routingKey = '');
 
     public function declareQueue(QueueDefinition $queue);
 
-    public function bindQueue($exchange, $queue, $routingKey = '');
+    public function bindQueue($queue, $exchange, $routingKey = '');
 }
