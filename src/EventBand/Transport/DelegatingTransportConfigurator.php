@@ -39,6 +39,16 @@ class DelegatingTransportConfigurator implements TransportConfigurator
      */
     public function supportsDefinition($definition)
     {
+        if (is_array($definition)) {
+            foreach ($definition as $child) {
+                if (!$this->supportsDefinition($child)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         foreach ($this->configurators as $configurator) {
             if ($configurator->supportsDefinition($definition)) {
                 return true;
@@ -53,6 +63,14 @@ class DelegatingTransportConfigurator implements TransportConfigurator
      */
     public function setUpDefinition($definition)
     {
+        if (is_array($definition)) {
+            foreach ($definition as $child) {
+                $this->setUpDefinition($child);
+            }
+
+            return;
+        }
+
         $setup = false;
         foreach ($this->configurators as $configurator) {
             if ($configurator->supportsDefinition($definition)) {

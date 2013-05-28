@@ -75,4 +75,28 @@ class DelegatingTransportConfiguratorTest extends TestCase
         $this->configurator->registerConfigurator('test2', $this->internalConfigurator);
         $this->configurator->setUpDefinition('supported');
     }
+
+    /**
+     * @test supportsDefinition supports array if all child definitions are supported
+     */
+    public function arrayDefinitionSupport()
+    {
+        $this->assertTrue($this->configurator->supportsDefinition(['supported']));
+        $this->assertFalse($this->configurator->supportsDefinition(['supported', 'unsupported']));
+        $this->assertTrue($this->configurator->supportsDefinition(['supported', 'supported']));
+        $this->assertTrue($this->configurator->supportsDefinition([['supported'], 'supported']));
+    }
+
+    /**
+     * @test setUpDefinition setup array of definitions
+     */
+    public function delegatingArraySetup()
+    {
+        $this->internalConfigurator
+            ->expects($this->exactly(2))
+            ->method('setUpDefinition')
+        ;
+
+        $this->configurator->setUpDefinition(['supported', ['supported']]);
+    }
 }
