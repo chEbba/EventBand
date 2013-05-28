@@ -40,29 +40,29 @@ class AmqpBuilder implements AmqpDefinition
      *
      * @return ExchangeBuilder
      */
-    public function exchange($name, $type = ExchangeDefinition::TYPE_DIRECT)
+    public function exchange($name, $type = ExchangeType::DIRECT)
     {
         return $this->exchanges[$name] = new ExchangeBuilder($this, $name, $type);
     }
 
     public function directExchange($name)
     {
-        return $this->exchange($name, ExchangeDefinition::TYPE_DIRECT);
+        return $this->exchange($name, ExchangeType::DIRECT);
     }
 
     public function fanoutExchange($name)
     {
-        return $this->exchange($name, ExchangeDefinition::TYPE_FANOUT);
+        return $this->exchange($name, ExchangeType::FANOUT);
     }
 
-    public function headerExchange($name)
+    public function headersExchange($name)
     {
-        return $this->exchange($name, ExchangeDefinition::TYPE_HEADER);
+        return $this->exchange($name, ExchangeType::HEADERS);
     }
 
     public function topicExchange($name)
     {
-        return $this->exchange($name, ExchangeDefinition::TYPE_TOPIC);
+        return $this->exchange($name, ExchangeType::TOPIC);
     }
 
     public function getExchanges()

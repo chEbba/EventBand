@@ -17,11 +17,6 @@ namespace EventBand\Transport\Amqp\Definition;
  */
 interface ExchangeDefinition
 {
-    const TYPE_DIRECT = 'direct';
-    const TYPE_FANOUT = 'fanout';
-    const TYPE_HEADER = 'header';
-    const TYPE_TOPIC = 'topic';
-
     public function getName();
 
     public function getType();

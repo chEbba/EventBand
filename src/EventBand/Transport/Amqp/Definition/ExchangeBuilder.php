@@ -20,27 +20,17 @@ class ExchangeBuilder extends ModelBuilder implements ExchangeDefinition
     private $type;
     private $internal = false;
 
-    public function __construct(AmqpBuilder $builder, $name, $type = ExchangeDefinition::TYPE_DIRECT)
+    public function __construct(AmqpBuilder $builder, $name, $type = ExchangeType::DIRECT)
     {
-        if (!in_array($type, self::getTypes())) {
+        if (!in_array($type, ExchangeType::getTypes())) {
             throw new \InvalidArgumentException(sprintf(
                 'Unknown type "%s" (expected one of: "%s")',
-                $type, implode('", "', self::getTypes())
+                $type, implode('", "', ExchangeType::getTypes())
             ));
         }
         $this->type = $type;
 
         parent::__construct($builder, $name);
-    }
-
-    final public static function getTypes()
-    {
-        return array(
-            ExchangeDefinition::TYPE_DIRECT,
-            ExchangeDefinition::TYPE_FANOUT,
-            ExchangeDefinition::TYPE_HEADER,
-            ExchangeDefinition::TYPE_TOPIC
-        );
     }
 
     public function getType()
