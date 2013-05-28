@@ -34,6 +34,15 @@ class ConnectionBuilder implements ConnectionDefinition
         return $this->builder;
     }
 
+    public function options(array $options)
+    {
+        foreach ($options as $key => $value) {
+            $this->$key($value);
+        }
+
+        return $this;
+    }
+
     public function host($host)
     {
         $this->host = $host;

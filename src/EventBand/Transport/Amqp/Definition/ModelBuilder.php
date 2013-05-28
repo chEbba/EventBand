@@ -21,9 +21,9 @@ abstract class ModelBuilder
     private $name;
     private $durable = true;
     private $autoDeleted = false;
-    private $bindings = array();
+    private $bindings = [];
 
-    public function __construct(AmqpBuilder $builder,$name)
+    public function __construct(AmqpBuilder $builder, $name)
     {
         $this->builder = $builder;
         $this->name = $name;
@@ -35,6 +35,29 @@ abstract class ModelBuilder
     public function end()
     {
         return $this->builder;
+    }
+
+    public function options(array $options)
+    {
+        foreach ($options as $key => $value) {
+            switch ($key) {
+                case 'bind':
+                    foreach ($value as $source => $routingKeys) {
+                        foreach ($routingKeys as $routingKey) {
+                            $this->bind($source, $routingKey);
+                        }
+                    }
+                    break;
+
+                default:
+                    if ($value) {
+                        $this->$key();
+                    }
+            }
+
+        }
+
+        return $this;
     }
 
     public function getName()

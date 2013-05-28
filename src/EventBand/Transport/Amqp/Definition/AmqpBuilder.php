@@ -27,42 +27,45 @@ class AmqpBuilder implements AmqpDefinition
     }
 
     /**
+     * @param array $options
+     *
      * @return ConnectionBuilder
      */
-    public function connection()
+    public function connection(array $options = [])
     {
-       return $this->connection;
+       return $this->connection->options($options);
     }
 
     /**
      * @param string $name
      * @param string $type
+     * @param array  $options
      *
      * @return ExchangeBuilder
      */
-    public function exchange($name, $type = ExchangeType::DIRECT)
+    public function exchange($name, $type = ExchangeType::DIRECT, array $options = [])
     {
-        return $this->exchanges[$name] = new ExchangeBuilder($this, $name, $type);
+        return $this->exchanges[$name] = (new ExchangeBuilder($this, $name, $type))->options($options);
     }
 
-    public function directExchange($name)
+    public function directExchange($name, array $options = [])
     {
-        return $this->exchange($name, ExchangeType::DIRECT);
+        return $this->exchange($name, ExchangeType::DIRECT, $options);
     }
 
-    public function fanoutExchange($name)
+    public function fanoutExchange($name, array $options = [])
     {
-        return $this->exchange($name, ExchangeType::FANOUT);
+        return $this->exchange($name, ExchangeType::FANOUT, $options);
     }
 
-    public function headersExchange($name)
+    public function headersExchange($name, array $options = [])
     {
-        return $this->exchange($name, ExchangeType::HEADERS);
+        return $this->exchange($name, ExchangeType::HEADERS, $options);
     }
 
-    public function topicExchange($name)
+    public function topicExchange($name, array $options = [])
     {
-        return $this->exchange($name, ExchangeType::TOPIC);
+        return $this->exchange($name, ExchangeType::TOPIC, $options);
     }
 
     public function getExchanges()
@@ -72,12 +75,13 @@ class AmqpBuilder implements AmqpDefinition
 
     /**
      * @param string $name
+     * @param array $options
      *
      * @return QueueBuilder
      */
-    public function queue($name)
+    public function queue($name, array $options = [])
     {
-        return $this->queues[$name] = new QueueBuilder($this, $name);
+        return $this->queues[$name] = (new QueueBuilder($this, $name))->options($options);
     }
 
     public function getQueues()
