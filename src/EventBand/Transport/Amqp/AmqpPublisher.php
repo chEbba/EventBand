@@ -9,6 +9,7 @@
 
 namespace EventBand\Transport\Amqp;
 
+use EventBand\Logger\PublicationLogger;
 use EventBand\Transport\Amqp\Driver\EventConversionException;
 use EventBand\Transport\Amqp\Driver\MessageEventConverter;
 use EventBand\Transport\Amqp\Driver\AmqpDriver;
@@ -27,17 +28,51 @@ use EventBand\Event;
  */
 class AmqpPublisher implements EventPublisher
 {
+
+    /**
+     * @var Driver\AmqpDriver
+     */
     private $driver;
+
+    /**
+     * @var Driver\MessageEventConverter
+     */
     private $converter;
+
+    /**
+     * @var string
+     */
     private $exchange;
+
+    /**
+     * @var \EventBand\Routing\EventRouter
+     */
     private $router;
+
+    /**
+     * @var bool
+     */
     private $persistent;
+
+    /**
+     * @var bool
+     */
     private $mandatory;
+
+    /**
+     * @var bool
+     */
     private $immediate;
+
+    /**
+     * @var PublicationLogger
+     */
+    protected $logger;
+
 
     public function __construct(AmqpDriver $driver, MessageEventConverter $converter, $exchange,
                                 EventRouter $router = null, $persistent = true,
-                                $mandatory = false, $immediate = false)
+                                $mandatory = false, $immediate = false, PublicationLogger $logger = null)
     {
         $this->driver = $driver;
         $this->converter = $converter;
@@ -46,6 +81,7 @@ class AmqpPublisher implements EventPublisher
         $this->persistent = $persistent;
         $this->mandatory = $mandatory;
         $this->immediate = $immediate;
+        $this->logger = $logger;
     }
 
     /**
@@ -61,7 +97,12 @@ class AmqpPublisher implements EventPublisher
                 $this->immediate
             );
 
-            $this->driver->publish($publication, $this->exchange, $this->getEventRoutingKey($event));
+            $this->driver->publish($publication, $this->exchange, $routingKey = $this->getEventRoutingKey($event));
+
+            if ($this->logger !== null) {
+                $this->logger->published($publication, $this->exchange, $routingKey);
+            }
+
         } catch (EventConversionException $e) {
             throw new PublishEventException($event, 'Event to message conversion error', $e);
         } catch (DriverException $e) {

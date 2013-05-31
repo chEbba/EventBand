@@ -213,6 +213,38 @@ class AmqpPublisherTest extends TestCase
         $this->fail('Exception was not thrown');
     }
 
+    public function testLoggerGetsCalledOnPublishedMessage()
+    {
+        $event = $this->createEvent();
+
+        $message = $this->createMessage();
+
+        $converter = $this->converter;
+        $converter->expects($this->once())
+            ->method("eventToMessage")->with($event)->will($this->returnValue($message));
+
+        // suppose this is actually a mock
+        $messagePublication = new MessagePublication(
+            $message,
+            true,
+            true,
+            true
+        );
+
+        $driver = $this->driver;
+        $driver->expects($this->once())
+            ->method("publish")->with($messagePublication, "exchange", "");
+
+        $logger = $this->getMock("EventBand\\Logger\\PublicationLogger");
+        $logger->expects($this->once())->method("published")->with(
+            $messagePublication, "exchange", ""
+        );
+
+        $publisher = new AmqpPublisher($driver, $converter, "exchange", null, true, true, true, $logger);
+
+        $publisher->publishEvent($event);
+    }
+
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject|Event
      */
