@@ -3,9 +3,8 @@
 namespace EventBand\Logger;
 
 use EventBand\Transport\Amqp\Driver\MessagePublication;
-use Psr\Log\LoggerInterface;
 
-interface PublicationLogger extends LoggerInterface
+interface PublicationLogger
 {
 
     public function published(MessagePublication $publication, $exchange, $routingKey);
