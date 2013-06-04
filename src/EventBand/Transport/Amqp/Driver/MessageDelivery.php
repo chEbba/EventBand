@@ -10,12 +10,12 @@
 namespace EventBand\Transport\Amqp\Driver;
 
 /**
- * Description of MessageDelivery
+ * Amqp message delivery
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class MessageDelivery
+class MessageDelivery implements \Serializable, \JsonSerializable
 {
     private $message;
     private $tag;
@@ -62,5 +62,53 @@ class MessageDelivery
     public function isRedelivered()
     {
         return $this->redelivered;
+    }
+
+    /**
+     * Get an array serializable with json
+     *
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'message'     => CustomAmqpMessage::getMessageProperties($this->message),
+            'tag'         => $this->tag,
+            'exchange'    => $this->exchange,
+            'queue'       => $this->queue,
+            'routingKey'  => $this->routingKey,
+            'redelivered' => $this->redelivered,
+        ];
+    }
+
+    /**
+     * Serialize publication
+     *
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize($this->jsonSerialize());
+    }
+
+    /**
+     * Unserialize array data
+     *
+     * @param string $serialized
+     */
+    public function unserialize($serialized)
+    {
+        $data = unserialize($serialized);
+        if (!is_array($data)) {
+            throw new \UnexpectedValueException('Unserialized data is not an array');
+        }
+
+        // TODO: check existence
+        $this->message      = CustomAmqpMessage::fromProperties($data['message']);
+        $this->tag          = (string) $data['tag'];
+        $this->exchange     = (string) $data['exchange'];
+        $this->queue        = (string) $data['queue'];
+        $this->routingKey   = (string) $data['routingKey'];
+        $this->redelivered  = (bool) $data['routingKey'];
     }
 }

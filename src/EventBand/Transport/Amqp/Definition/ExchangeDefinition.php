@@ -10,7 +10,7 @@
 namespace EventBand\Transport\Amqp\Definition;
 
 /**
- * Description of ExchangeDefinition
+ * Definition of AMQP exchange
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT

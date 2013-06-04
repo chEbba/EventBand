@@ -10,12 +10,12 @@
 namespace EventBand\Transport\Amqp\Definition;
 
 /**
- * Description of ModelDefinition
+ * Base definition builder for queues and exchanges
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-abstract class ModelBuilder
+abstract class ModelBuilder implements \JsonSerializable
 {
     private $builder;
     private $name;
@@ -113,4 +113,18 @@ abstract class ModelBuilder
         return $this->bindings;
     }
 
+    /**
+     * Converts properties to serializable array
+     *
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'name' => $this->name,
+            'durable' => $this->durable,
+            'autoDeleted' => $this->autoDelete(),
+            'bindings' => $this->bindings
+        ];
+    }
 }

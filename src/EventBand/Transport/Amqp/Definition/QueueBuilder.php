@@ -10,7 +10,7 @@
 namespace EventBand\Transport\Amqp\Definition;
 
 /**
- * Description of QueueBuilder
+ * Queue builder
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
@@ -32,5 +32,15 @@ class QueueBuilder extends ModelBuilder implements QueueDefinition
     public function isExclusive()
     {
         return $this->exclusive;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_merge(parent::jsonSerialize(), [
+            'exclusive' => $this->exclusive
+        ]);
     }
 }

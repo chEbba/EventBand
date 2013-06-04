@@ -10,7 +10,7 @@
 namespace EventBand\Transport\Amqp\Definition;
 
 /**
- * Description of ExchangeBuilder
+ * Exchange builder
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
@@ -51,5 +51,16 @@ class ExchangeBuilder extends ModelBuilder implements ExchangeDefinition
     public function isInternal()
     {
         return $this->internal;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_merge(parent::jsonSerialize(), [
+            'type' => $this->type,
+            'internal' => $this->internal
+        ]);
     }
 }

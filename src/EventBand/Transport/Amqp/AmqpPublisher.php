@@ -9,6 +9,7 @@
 
 namespace EventBand\Transport\Amqp;
 
+use Che\LogStock\LoggerFactory;
 use EventBand\Transport\Amqp\Driver\EventConversionException;
 use EventBand\Transport\Amqp\Driver\MessageEventConverter;
 use EventBand\Transport\Amqp\Driver\AmqpDriver;
@@ -34,7 +35,17 @@ class AmqpPublisher implements EventPublisher
     private $persistent;
     private $mandatory;
     private $immediate;
+    private $logger;
 
+    /**
+     * @param AmqpDriver            $driver     Driver for amqp
+     * @param MessageEventConverter $converter  Event will be converted to message
+     * @param string                $exchange   Name of exchange
+     * @param EventRouter|null      $router     If not null routing key will be generate with router
+     * @param bool                  $persistent Message will be persistent or not
+     * @param bool                  $mandatory  Check if message is routed to queues
+     * @param bool                  $immediate  Message should be consumed immediately
+     */
     public function __construct(AmqpDriver $driver, MessageEventConverter $converter, $exchange,
                                 EventRouter $router = null, $persistent = true,
                                 $mandatory = false, $immediate = false)
@@ -46,6 +57,7 @@ class AmqpPublisher implements EventPublisher
         $this->persistent = $persistent;
         $this->mandatory = $mandatory;
         $this->immediate = $immediate;
+        $this->logger = LoggerFactory::getLogger(__CLASS__);
     }
 
     /**
@@ -61,7 +73,14 @@ class AmqpPublisher implements EventPublisher
                 $this->immediate
             );
 
-            $this->driver->publish($publication, $this->exchange, $this->getEventRoutingKey($event));
+            $routingKey = $this->getEventRoutingKey($event);
+            $this->logger->debug('Publish message to exchange', [
+                'publication' => $publication,
+                'exchange' => $this->exchange,
+                'routingKey' => $routingKey
+            ]);
+            $this->driver->publish($publication, $this->exchange, $routingKey);
+
         } catch (EventConversionException $e) {
             throw new PublishEventException($event, 'Event to message conversion error', $e);
         } catch (DriverException $e) {
