@@ -9,7 +9,7 @@
 
 namespace EventBand\Routing;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\PropertyAccess\Exception\RuntimeException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -56,17 +56,21 @@ class EventPatternRouter implements EventRouter
     /**
      * {@inheritDoc}
      */
-    public function routeEvent(Event $event)
+    public function routeEvent($name, Event $event)
     {
         $replaces = array();
         foreach ($this->getPlaceholders() as $placeholder => $property) {
-            try {
-                $value = $this->accessor->getValue($event, $property);
-            } catch (RuntimeException $e) {
-                throw new EventRoutingException($event, sprintf('Can not replace "%s" property', $placeholder), $e);
-            }
-            if (!is_scalar($value)) {
-                throw new EventRoutingException($event, sprintf('Value for "%s" property is not a scalar', $placeholder));
+            if ($property === 'name') {
+                $value = $name;
+            } else {
+                try {
+                    $value = $this->accessor->getValue($event, $property);
+                } catch (RuntimeException $e) {
+                    throw new EventRoutingException($name, $event, sprintf('Can not replace "%s" property', $placeholder), $e);
+                }
+                if (!is_scalar($value)) {
+                    throw new EventRoutingException($name, $event, sprintf('Value for "%s" property is not a scalar', $placeholder));
+                }
             }
             $replaces[$placeholder] = $value;
         }

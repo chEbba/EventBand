@@ -9,7 +9,7 @@
 
 namespace EventBand\Serializer;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Serializer based on native PHP serialize
@@ -24,6 +24,12 @@ class NativeEventSerializer implements EventSerializer
      */
     public function serializeEvent(Event $event)
     {
+        // Require a custom serialization because of a dispatcher property.
+        // Will be able to remove this after Symfony 3.0
+        if (!$event instanceof \Serializable) {
+            throw new UnsupportedEventException($event, 'Event is not an instance of Serializable');
+        }
+
         try {
             $data = @serialize($event);
             if ($data === 'N;') {// If error , event will be null
@@ -61,5 +67,4 @@ class NativeEventSerializer implements EventSerializer
 
         return $event;
     }
-
 }

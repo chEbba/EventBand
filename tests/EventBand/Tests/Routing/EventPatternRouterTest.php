@@ -11,6 +11,7 @@ namespace EventBand\Tests\Routing;
 
 use EventBand\Routing\EventPatternRouter;
 use PHPUnit_Framework_TestCase as TestCase;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Test for EventPatternRouter
@@ -53,15 +54,11 @@ class EventPatternRouterTest extends TestCase
      */
     public function routerReplacement()
     {
-        $router = new EventPatternRouter('foo.{name}.bar.{name}');
-        $event = $this->getMock('EventBand\Event');
-        $event
-            ->expects($this->any())
-            ->method('getName')
-            ->will($this->returnValue('nameValue'))
-        ;
+        $router = new EventPatternRouter('foo.{name}.bar.{self.property}');
+        $event = new RoutedEventStub();
+        $event->setProperty('prop');
 
-        $this->assertEquals('foo.nameValue.bar.nameValue', $router->routeEvent($event));
+        $this->assertEquals('foo.ev.bar.prop', $router->routeEvent('ev', $event));
     }
 
     /**
@@ -72,10 +69,11 @@ class EventPatternRouterTest extends TestCase
      */
     public function routeReplaceNonScalars()
     {
-        $router = new EventPatternRouter('{time}');
-        $event = new EventMock();
+        $router = new EventPatternRouter('{property}');
+        $event = new RoutedEventStub();
+        $event->setProperty(new \DateTime());
 
-        $router->routeEvent($event);
+        $router->routeEvent('name', $event);
     }
 
     /**
@@ -87,8 +85,8 @@ class EventPatternRouterTest extends TestCase
     public function routeReplaceNotExisting()
     {
         $router = new EventPatternRouter('{foo}');
-        $event = $this->getMock('EventBand\Event');
+        $event = new Event();
 
-        $router->routeEvent($event);
+        $router->routeEvent('name', $event);
     }
 }

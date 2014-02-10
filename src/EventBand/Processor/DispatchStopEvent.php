@@ -5,24 +5,14 @@
 
 namespace EventBand\Processor;
 
-use EventBand\Event;
-
 /**
  * Class DispatchStopEvent
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class DispatchStopEvent extends StoppableDispatchEvent
+class DispatchStopEvent extends DispatchingEvent implements StoppableProcessEvent
 {
-    private $event;
+    use StoppableProcess;
 
-    public function __construct(Event $event)
-    {
-        $this->event = $event;
-    }
-
-    public function getEvent()
-    {
-        return $this->event;
-    }
+    const NAME = 'event_band.dispatch.stop';
 }

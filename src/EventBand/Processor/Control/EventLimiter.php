@@ -7,10 +7,11 @@
  * with this package in the file LICENSE.
  */
 
-namespace EventBand;
+namespace EventBand\Processor\Control;
 
 use EventBand\Processor\DispatchStopEvent;
 use EventBand\Processor\ProcessStartEvent;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Description of EventLimiter
@@ -18,7 +19,7 @@ use EventBand\Processor\ProcessStartEvent;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class EventLimiter
+class EventLimiter implements EventSubscriberInterface
 {
     private $events;
     private $limit;
@@ -29,8 +30,17 @@ class EventLimiter
             throw new \InvalidArgumentException(sprintf('Limit %d < 1', $limit));
         }
         $this->limit = $limit;
+    }
 
-        $this->events = 0;
+    /**
+     * {@inheritDoc}
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+            ['event' => ProcessStartEvent::NAME, 'method' => 'initCounter'],
+            ['event' => DispatchStopEvent::NAME, 'method' => 'checkLimit']
+        ];
     }
 
     public function initCounter()
@@ -40,10 +50,14 @@ class EventLimiter
 
     public function checkLimit(DispatchStopEvent $event)
     {
+        if ($this->events === null) {
+            throw new \BadMethodCallException('Counter was not initialized. Use initCounter');
+        }
+
         $this->events++;
 
         if ($this->events >= $this->limit) {
-            $event->stopDispatching();
+            $event->stopProcessing();
         }
     }
 }

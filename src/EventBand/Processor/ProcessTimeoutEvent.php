@@ -9,16 +9,29 @@
 
 namespace EventBand\Processor;
 
-use EventBand\ClassNamedEvent;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Description of ExceutionStartEvent
+ * Description of DispatchTimeoutEvent
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class ProcessStartEvent extends Event
+class ProcessTimeoutEvent extends Event implements StoppableProcessEvent
 {
-    const NAME = 'event_band.process.start';
+    use StoppableProcess;
+
+    const NAME = 'event_band.process.timeout';
+
+    private $timeout;
+
+    public function __construct($timeout)
+    {
+        $this->timeout = (int) $timeout;
+    }
+
+    public function getTimeout()
+    {
+        return $this->timeout;
+    }
 }

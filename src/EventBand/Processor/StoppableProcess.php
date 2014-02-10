@@ -9,16 +9,23 @@
 
 namespace EventBand\Processor;
 
-use EventBand\ClassNamedEvent;
-use Symfony\Component\EventDispatcher\Event;
-
 /**
- * Description of ExceutionStartEvent
+ * Description of DispatchFinishEvent
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class ProcessStartEvent extends Event
+trait StoppableProcess
 {
-    const NAME = 'event_band.process.start';
+    private $processing = true;
+
+    public function isProcessing()
+    {
+        return $this->processing;
+    }
+
+    public function stopProcessing()
+    {
+        $this->processing = false;
+    }
 }

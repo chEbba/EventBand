@@ -9,26 +9,13 @@
 
 namespace EventBand\Processor;
 
-use EventBand\ClassNamedEvent;
-use EventBand\Event;
-
 /**
  * Description of DispatchEvent
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class DispatchStartEvent extends ClassNamedEvent
+class DispatchStartEvent extends DispatchingEvent
 {
-    private $dispatchingEvent;
-
-    public function __construct(Event $dispatchingEvent)
-    {
-        $this->dispatchingEvent = $dispatchingEvent;
-    }
-
-    public function getDispatchingEvent()
-    {
-        return $this->dispatchingEvent;
-    }
+    const NAME = 'event_band.dispatch.start';
 }

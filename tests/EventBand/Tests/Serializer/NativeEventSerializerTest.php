@@ -42,7 +42,7 @@ class NativeEventSerializerTest extends TestCase
      */
     public function serializeEvent()
     {
-        $event = new EventMock('event.name');
+        $event = new NativeSerializableEventStub();
         $data = $this->serializer->serializeEvent($event);
         $this->assertSame(serialize($event), $data);
     }
@@ -52,7 +52,7 @@ class NativeEventSerializerTest extends TestCase
      */
     public function serializeEventException()
     {
-        $event = new EventMock('event.name', 'exception');
+        $event = new NativeSerializableEventStub('exception');
         try {
             $this->serializer->serializeEvent($event);
         } catch (UnsupportedEventException $e) {
@@ -67,7 +67,7 @@ class NativeEventSerializerTest extends TestCase
      */
     public function serializeEventError()
     {
-        $event = new EventMock('event.name', 'error');
+        $event = new NativeSerializableEventStub('error');
         try {
             $this->serializer->serializeEvent($event);
         } catch (UnsupportedEventException $e) {
@@ -82,7 +82,7 @@ class NativeEventSerializerTest extends TestCase
      */
     public function deserializeEvent()
     {
-        $event = new EventMock('event.name');
+        $event = new NativeSerializableEventStub('event.name');
         $this->assertEquals($event, $this->serializer->deserializeEvent(serialize($event)));
     }
 
@@ -92,7 +92,7 @@ class NativeEventSerializerTest extends TestCase
     public function deserializeWithException()
     {
         try {
-            $this->serializer->deserializeEvent(new EventMock('event.name', 'exception'));
+            $this->serializer->deserializeEvent(new NativeSerializableEventStub('event.name', 'exception'));
         } catch (SerializerException $e) {
             return;
         }

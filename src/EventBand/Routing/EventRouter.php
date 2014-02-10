@@ -9,7 +9,7 @@
 
 namespace EventBand\Routing;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Router for events to publish them in a proper place
@@ -22,10 +22,11 @@ interface EventRouter
     /**
      * Route event
      *
-     * @param Event $event
+     * @param string $name
+     * @param Event  $event
      *
      * @return string
      * @throws EventRoutingException
      */
-    public function routeEvent(Event $event);
+    public function routeEvent($name, Event $event);
 }

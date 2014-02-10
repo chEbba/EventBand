@@ -9,8 +9,7 @@
 
 namespace EventBand\Transport;
 
-
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Event publisher. Publishes events to custom storage for later processing
@@ -21,11 +20,12 @@ use EventBand\Event;
 interface EventPublisher
 {
     /**
-     * Publish event object
+     * Publish event in container
      *
-     * @param Event $event
+     * @param string $name
+     * @param Event  $event
      *
      * @throws PublishEventException
      */
-    public function publishEvent(Event $event);
+    public function publishEvent($name, Event $event);
 }

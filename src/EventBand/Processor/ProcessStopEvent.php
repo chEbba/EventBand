@@ -10,6 +10,7 @@
 namespace EventBand\Processor;
 
 use EventBand\ClassNamedEvent;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Description of ProcessStopEvent
@@ -17,7 +18,7 @@ use EventBand\ClassNamedEvent;
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
-class ProcessStopEvent extends ClassNamedEvent
+class ProcessStopEvent extends Event
 {
-
+    const NAME = 'event_band.process.stop';
 }

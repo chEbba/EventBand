@@ -9,7 +9,7 @@
 
 namespace EventBand\Serializer;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Serializer for events

@@ -9,9 +9,10 @@
 
 namespace EventBand\Processor;
 
-use EventBand\Event;
-use EventBand\BandDispatcher;
+use EventBand\BandDispatcherFactory;
 use EventBand\Transport\EventConsumer;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Process consumed events through dispatcher
@@ -21,71 +22,64 @@ use EventBand\Transport\EventConsumer;
  */
 class DispatchProcessor
 {
-    private $dispatcher;
+    private $dispatcherFactory;
     private $consumer;
-    private $timeout;
-    private $band;
 
     /**
-     * @param BandDispatcher $dispatcher Dispatcher
-     * @param EventConsumer  $consumer   Consumer
-     * @param string         $band       Name of band for dispatcher
-     * @param int            $timeout    Timeout in second for consumer
+     * @param BandDispatcherFactory $dispatcherFactory
+     * @param EventConsumer         $consumer
      */
-    public function __construct(BandDispatcher $dispatcher, EventConsumer $consumer, $band, $timeout)
+    public function __construct(BandDispatcherFactory $dispatcherFactory, EventConsumer $consumer)
     {
-        $this->dispatcher = $dispatcher;
+        $this->dispatcherFactory = $dispatcherFactory;
         $this->consumer = $consumer;
-
-        $band = (string) $band;
-        if (empty($band)) {
-            throw new \InvalidArgumentException('Band should not be empty');
-        }
-        $this->band = $band;
-
-        if (($timeout = (int) $timeout) < 0) {
-            throw new \InvalidArgumentException(sprintf('Timeout %d < 0', $timeout));
-        }
-        $this->timeout = $timeout;
     }
 
     /**
      * Process events
      */
-    public function process()
+    public function process($band, $timeout = 0)
     {
-        $dispatching = true;
+        if (($timeout = (int) $timeout) < 0) {
+            throw new \InvalidArgumentException(sprintf('Timeout %d < 0', $timeout));
+        }
 
-        $this->dispatcher->dispatchEvent(new ProcessStartEvent());
+        $processing = true;
 
-        $dispatchCallback = $this->getDispatchCallback($dispatching);
+        $defaultDispatcher = $this->dispatcherFactory->getDefaultDispatcher();
+        $defaultDispatcher->dispatch(ProcessStartEvent::NAME, new ProcessStartEvent());
 
-        while ($dispatching) {
-            $this->consumer->consumeEvents($dispatchCallback, $this->timeout);
-            if ($dispatching) { // We stopped by timeout
-                $dispatchTimeout = new DispatchTimeoutEvent($this->timeout);
-                $this->dispatcher->dispatchEvent($dispatchTimeout);
+        $dispatcher = $this->dispatcherFactory->getBandDispatcher($band);
+        $dispatchCallback = $this->getDispatchCallback($dispatcher, $processing);
 
-                $dispatching = $dispatchTimeout->isDispatching();
+        while ($processing) {
+            $this->consumer->consumeEvents($dispatchCallback, $timeout);
+            if ($processing) { // We stopped by timeout
+                $dispatchTimeout = new ProcessTimeoutEvent($timeout);
+                $dispatcher->dispatch(ProcessTimeoutEvent::NAME, $dispatchTimeout);
+
+                $processing = $dispatchTimeout->isProcessing();
             }
         }
 
-        $this->dispatcher->dispatchEvent(new ProcessStopEvent());
+        $dispatcher->dispatch(ProcessStopEvent::NAME, new ProcessStopEvent());
     }
 
-    private function getDispatchCallback(&$dispatching)
+    private function getDispatchCallback(EventDispatcherInterface $dispatcher, &$processing)
     {
-        return function (Event $event) use (&$dispatching) {
-            $dispatchStart = new DispatchStartEvent($event);
-            $this->dispatcher->dispatchEvent($dispatchStart);
+        return function ($eventName, Event $event) use ($dispatcher, &$processing) {
+            $defaultDispatcher = $this->dispatcherFactory->getDefaultDispatcher();
 
-            $this->dispatcher->dispatchEvent($event, $this->band);
+            $dispatchStart = new DispatchStartEvent($eventName, $event);
+            $defaultDispatcher->dispatch(DispatchStartEvent::NAME, $dispatchStart);
 
-            $dispatchStop = new DispatchStopEvent($event);
-            $this->dispatcher->dispatchEvent($dispatchStop);
-            $dispatching = $dispatchStop->isDispatching();
+            $dispatcher->dispatch($eventName, $event);
 
-            return $dispatching;
+            $dispatchStop = new DispatchStopEvent($eventName, $event);
+            $defaultDispatcher->dispatch(DispatchStopEvent::NAME, $dispatchStop);
+            $processing = $dispatchStop->isProcessing();
+
+            return $processing;
         };
     }
 }

@@ -9,7 +9,7 @@
 
 namespace EventBand\Routing;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Exception on event routing
@@ -19,13 +19,29 @@ use EventBand\Event;
  */
 class EventRoutingException extends \RuntimeException
 {
+    private $name;
     private $event;
 
-    public function __construct(Event $event, $reason, \Exception $previous = null)
+    /**
+     * @param string          $name
+     * @param Event           $event
+     * @param string          $reason
+     * @param \Exception|null $previous
+     */
+    public function __construct($name, Event $event, $reason, \Exception $previous = null)
     {
         $this->event = $event;
 
-        parent::__construct(sprintf('Can not route event "%s": %s', $event->getName(), $reason), 0, $previous);
+        parent::__construct(sprintf('Can not route event "%s": %s', $name, $reason), 0, $previous);
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     public function getEvent()

@@ -18,24 +18,47 @@ use EventBand\Event;
  */
 class EventCallbackException extends \RuntimeException
 {
-    private $callback;
+    private $name;
     private $event;
+    private $callback;
 
     /**
      * @param callable   $callback
+     * @param string     $name
      * @param Event      $event
      * @param \Exception $previous
      */
-    public function __construct($callback, Event $event, \Exception $previous)
+    public function __construct($name, Event $event, callable $callback, \Exception $previous)
     {
-        $this->callback = $callback;
+        $this->name = $name;
         $this->event = $event;
+        $this->callback = $callback;
 
         parent::__construct(
-            sprintf('Exception while executing "%s" event callback "%s"', $event->getName(), $this->getCallbackAsString()),
+            sprintf('Exception while executing "%s" event callback "%s"', $name, $this->getCallbackAsString()),
             0,
             $previous
         );
+    }
+
+    /**
+     * Get event
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get event object
+     *
+     * @return Event
+     */
+    public function getEvent()
+    {
+        return $this->event;
     }
 
     /**
@@ -71,15 +94,5 @@ class EventCallbackException extends \RuntimeException
         }
 
         return strval($this->callback);
-    }
-
-    /**
-     * Get event
-     *
-     * @return Event
-     */
-    public function getEvent()
-    {
-        return $this->event;
     }
 }
