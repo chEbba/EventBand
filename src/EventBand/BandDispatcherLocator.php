@@ -17,6 +17,9 @@ class BandDispatcherLocator implements BandDispatcherFactory
 {
     private $locator;
 
+    /**
+     * @param ServiceLocator $locator Locator should always return a dispatcher for empty name
+     */
     public function __construct(ServiceLocator $locator)
     {
         $this->locator = $locator;
@@ -47,7 +50,7 @@ class BandDispatcherLocator implements BandDispatcherFactory
 
         $dispatcher = $this->loadDispatcher($band);
         if (!$dispatcher) {
-            throw new \OutOfBoundsException(sprintf('No dispatcher "%s" was found'));
+            throw new \OutOfBoundsException(sprintf('No dispatcher "%s" was found', $band));
         }
 
         return $dispatcher;

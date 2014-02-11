@@ -28,14 +28,30 @@ class BandDispatcherProxy implements EventDispatcherInterface
     }
 
     /**
+     * @return EventDispatcherInterface
+     */
+    public function getInternalDispatcher()
+    {
+        return $this->dispatcher;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEventPrefix()
+    {
+        return $this->eventPrefix;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function addListener($eventName, $listener, $priority = 0)
     {
         $wrapper = function (Event $event) use ($listener) {
-            $eventName = $event->getName();
+            $eventName = $this->unprefixEvent($event->getName());
             // Deprecated since 2.4, this call can be removed after 3.0
-            $event->setName($this->unprefixEvent($eventName));
+            $event->setName($eventName);
             // Original dispatcher is used to force the default band usage
             // Use the 2.4+ listener signature
             call_user_func($listener, $event, $eventName, $event->getDispatcher());
@@ -63,7 +79,7 @@ class BandDispatcherProxy implements EventDispatcherInterface
      */
     public function hasListeners($eventName = null)
     {
-        return $this->hasListeners($this->prefixEvent($eventName));
+        return $this->dispatcher->hasListeners($this->prefixEvent($eventName));
     }
 
     /**
@@ -72,7 +88,12 @@ class BandDispatcherProxy implements EventDispatcherInterface
     public function getListeners($eventName = null)
     {
         if ($eventName !== null) {
-            return $this->dispatcher->getListeners($this->prefixEvent($eventName));
+            $listeners = $this->dispatcher->getListeners($this->prefixEvent($eventName));
+            foreach ($listeners as &$listener) {
+                $listener = $this->unwrapListener($listener);
+            }
+
+            return $listeners;
         }
 
         $listeners = [];
@@ -80,9 +101,7 @@ class BandDispatcherProxy implements EventDispatcherInterface
             $unprefixed = $this->unprefixEvent($eventName);
             if ($unprefixed !== $eventName) {
                 foreach ($eventListeners as &$listener) {
-                    if ($this->listeners->contains($listener)) {
-                        $listener = $this->listeners->offsetGet($listener);
-                    }
+                    $listener = $this->unwrapListener($listener);
                 }
                 $listeners[$unprefixed] = $eventListeners;
             }
@@ -132,7 +151,7 @@ class BandDispatcherProxy implements EventDispatcherInterface
      */
     public function dispatch($eventName, Event $event = null)
     {
-        $this->dispatch($this->prefixEvent($eventName), $event);
+        return $this->dispatcher->dispatch($this->prefixEvent($eventName), $event);
     }
 
     /**
@@ -173,5 +192,14 @@ class BandDispatcherProxy implements EventDispatcherInterface
         }
 
         return null;
+    }
+
+    private function unwrapListener($listener)
+    {
+        if ($this->listeners->contains($listener)) {
+            return $this->listeners->offsetGet($listener);
+        }
+
+        return $listener;
     }
 }
