@@ -22,8 +22,8 @@ interface EventConsumer
      * This method can be blocking but should return if no events exist in timeout seconds.
      * If callback fails event should be requeued.
      *
-     * @param callable $callback Event callback. If callback returns false consumption should be stopped.
-     *                           Signature: bool function($name, Event $event)
+     * @param callable $callback Event callback. Signature: bool function(Event $event)
+     *                           If callback returns false consumption should be stopped.
      * @param int      $timeout  Timeout in seconds (>= 0).
      *                           If not events occurs in $timeout seconds consumer should stop consumption.
      *

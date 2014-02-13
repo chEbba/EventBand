@@ -25,7 +25,7 @@ class SerializableSymfonyEventTest extends TestCase
         $serialized = serialize($event);
         $unserialized = unserialize($serialized);
 
-        $this->assertNull($unserialized->getName());
+        $this->assertEquals('event.name', $unserialized->getName());
         $this->assertEquals('data', $unserialized->getFoo());
         $this->assertNull($unserialized->getDispatcher());
     }

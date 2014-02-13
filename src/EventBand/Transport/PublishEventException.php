@@ -9,7 +9,7 @@
 
 namespace EventBand\Transport;
 
-use EventBand\Event;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Exception while publishing event

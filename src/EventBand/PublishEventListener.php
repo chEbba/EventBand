@@ -32,7 +32,7 @@ class PublishEventListener
 
     public function __invoke(Event $event)
     {
-        $this->publisher->publishEvent($event->getName(), $event);
+        $this->publisher->publishEvent($event);
 
         if (!$this->propagation) {
             $event->stopPropagation();

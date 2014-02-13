@@ -8,7 +8,7 @@ namespace EventBand\Serializer;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Class SeriazlizableEvent
+ * Class SerializableEvent
  *
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
@@ -37,10 +37,17 @@ class SerializableEvent extends Event implements \Serializable
 
     protected function toSerializableArray()
     {
-        return [];
+        return [
+            'name' =>  $this->getName()
+        ];
     }
 
     protected function fromUnserializedArray(array $data)
     {
+        if (!isset($data['name'])) {
+            throw new \RuntimeException('Key "name" is not set in unserialized array');
+        }
+
+        $this->setName($data['name']);
     }
 }

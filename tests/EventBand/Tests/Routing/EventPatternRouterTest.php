@@ -10,6 +10,7 @@
 namespace EventBand\Tests\Routing;
 
 use EventBand\Routing\EventPatternRouter;
+use EventBand\Routing\EventRoutingException;
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -54,39 +55,55 @@ class EventPatternRouterTest extends TestCase
      */
     public function routerReplacement()
     {
-        $router = new EventPatternRouter('foo.{name}.bar.{self.property}');
+        $router = new EventPatternRouter('foo.{name}.bar.{self.foo}');
         $event = new RoutedEventStub();
-        $event->setProperty('prop');
+        $event->setName('ev');
+        $event->setFoo('prop');
 
-        $this->assertEquals('foo.ev.bar.prop', $router->routeEvent('ev', $event));
+        $this->assertEquals('foo.ev.bar.prop', $router->routeEvent($event));
     }
 
     /**
      * @test routeEvent throws exception on non-scalar replacements
-     *
-     * @expectedException EventBand\Routing\EventRoutingException
-     * @expectedExceptionMessage is not a scalar
      */
     public function routeReplaceNonScalars()
     {
-        $router = new EventPatternRouter('{property}');
+        $router = new EventPatternRouter('{foo}');
         $event = new RoutedEventStub();
-        $event->setProperty(new \DateTime());
+        $event->setName('ev');
+        $event->setFoo(new \DateTime());
 
-        $router->routeEvent('name', $event);
+        try {
+            $router->routeEvent($event);
+        } catch (EventRoutingException $e) {
+            $this->assertContains('is not a scalar', $e->getMessage());
+            $this->assertContains('foo', $e->getMessage());
+            $this->assertContains('ev', $e->getMessage());
+            return;
+        }
+
+        $this->fail('Exception was not thrown');
     }
 
     /**
      * @test routeEvent throws exception if property is not found
-     *
-     * @expectedException EventBand\Routing\EventRoutingException
-     * @expectedExceptionMessage Can not replace
      */
     public function routeReplaceNotExisting()
     {
         $router = new EventPatternRouter('{foo}');
         $event = new Event();
+        $event->setName('foo');
 
-        $router->routeEvent('name', $event);
+
+        try {
+            $router->routeEvent($event);
+        } catch (EventRoutingException $e) {
+            $this->assertContains('Can not get value', $e->getMessage());
+            $this->assertContains('foo', $e->getMessage());
+            $this->assertContains('ev', $e->getMessage());
+            return;
+        }
+
+        $this->fail('Exception was not thrown');
     }
 }

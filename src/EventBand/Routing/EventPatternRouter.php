@@ -56,21 +56,17 @@ class EventPatternRouter implements EventRouter
     /**
      * {@inheritDoc}
      */
-    public function routeEvent($name, Event $event)
+    public function routeEvent(Event $event)
     {
         $replaces = array();
         foreach ($this->getPlaceholders() as $placeholder => $property) {
-            if ($property === 'name') {
-                $value = $name;
-            } else {
-                try {
-                    $value = $this->accessor->getValue($event, $property);
-                } catch (RuntimeException $e) {
-                    throw new EventRoutingException($name, $event, sprintf('Can not replace "%s" property', $placeholder), $e);
-                }
-                if (!is_scalar($value)) {
-                    throw new EventRoutingException($name, $event, sprintf('Value for "%s" property is not a scalar', $placeholder));
-                }
+            try {
+                $value = $this->accessor->getValue($event, $property);
+            } catch (RuntimeException $e) {
+                throw new EventRoutingException($event, sprintf('Can not get value for "%s" property', $placeholder), $e);
+            }
+            if (!is_scalar($value)) {
+                throw new EventRoutingException($event, sprintf('Value for "%s" property is not a scalar', $placeholder));
             }
             $replaces[$placeholder] = $value;
         }

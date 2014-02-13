@@ -19,7 +19,7 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class RoutedEventStub extends Event
 {
-    private $property;
+    private $foo;
 
     public function getSelf()
     {
@@ -27,13 +27,13 @@ class RoutedEventStub extends Event
     }
 
     /**
-     * @param mixed $property
+     * @param mixed $foo
      *
      * @return $this Provides the fluent interface
      */
-    public function setProperty($property)
+    public function setFoo($foo)
     {
-        $this->property = $property;
+        $this->foo = $foo;
 
         return $this;
     }
@@ -41,8 +41,8 @@ class RoutedEventStub extends Event
     /**
      * @return mixed
      */
-    public function getProperty()
+    public function getFoo()
     {
-        return $this->property;
+        return $this->foo;
     }
 }

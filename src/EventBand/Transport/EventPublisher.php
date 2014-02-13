@@ -22,10 +22,9 @@ interface EventPublisher
     /**
      * Publish event in container
      *
-     * @param string $name
-     * @param Event  $event
+     * @param Event $event
      *
      * @throws PublishEventException
      */
-    public function publishEvent($name, Event $event);
+    public function publishEvent(Event $event);
 }

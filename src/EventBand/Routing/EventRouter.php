@@ -22,11 +22,10 @@ interface EventRouter
     /**
      * Route event
      *
-     * @param string $name
      * @param Event  $event
      *
      * @return string
      * @throws EventRoutingException
      */
-    public function routeEvent($name, Event $event);
+    public function routeEvent(Event $event);
 }
