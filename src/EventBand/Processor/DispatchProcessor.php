@@ -50,7 +50,7 @@ class DispatchProcessor
         $defaultDispatcher->dispatch(ProcessStartEvent::NAME, new ProcessStartEvent());
 
         $dispatcher = $this->dispatcherFactory->getBandDispatcher($band);
-        $dispatchCallback = $this->getDispatchCallback($dispatcher, $processing);
+        $dispatchCallback = $this->createDispatchCallback($dispatcher, $processing);
 
         while ($processing) {
             $this->consumer->consumeEvents($dispatchCallback, $timeout);
@@ -65,7 +65,7 @@ class DispatchProcessor
         $dispatcher->dispatch(ProcessStopEvent::NAME, new ProcessStopEvent());
     }
 
-    private function getDispatchCallback(EventDispatcherInterface $dispatcher, &$processing)
+    private function createDispatchCallback(EventDispatcherInterface $dispatcher, &$processing)
     {
         return function ($eventName, Event $event) use ($dispatcher, &$processing) {
             $defaultDispatcher = $this->dispatcherFactory->getDefaultDispatcher();
