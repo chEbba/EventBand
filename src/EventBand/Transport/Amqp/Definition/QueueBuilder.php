@@ -19,7 +19,7 @@ class QueueBuilder extends ModelBuilder implements QueueDefinition
 {
     private $exclusive;
 
-    private $arguments = array();
+    private $arguments;
 
     /**
      * @return $this Provides the fluent interface
@@ -40,7 +40,7 @@ class QueueBuilder extends ModelBuilder implements QueueDefinition
      * @param array $arguments
      * @return $this
      */
-    public function arguments($arguments = array())
+    public function arguments($arguments = null)
     {
         $this->arguments = $arguments;
 
