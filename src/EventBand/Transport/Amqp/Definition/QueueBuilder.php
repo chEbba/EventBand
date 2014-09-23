@@ -19,6 +19,8 @@ class QueueBuilder extends ModelBuilder implements QueueDefinition
 {
     private $exclusive;
 
+    private $arguments;
+
     /**
      * @return $this Provides the fluent interface
      */
@@ -35,12 +37,29 @@ class QueueBuilder extends ModelBuilder implements QueueDefinition
     }
 
     /**
+     * @param array $arguments
+     * @return $this
+     */
+    public function arguments($arguments = null)
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    public function getArguments()
+    {
+        return $this->arguments;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function jsonSerialize()
     {
         return array_merge(parent::jsonSerialize(), [
-            'exclusive' => $this->exclusive
+            'exclusive' => $this->exclusive,
+            'arguments' => $this->arguments,
         ]);
     }
 }

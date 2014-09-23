@@ -51,7 +51,7 @@ abstract class ModelBuilder implements \JsonSerializable
 
                 default:
                     if ($value) {
-                        $this->$key();
+                        $this->$key($value);
                     }
             }
 

@@ -26,4 +26,6 @@ interface QueueDefinition
     public function isAutoDeleted();
 
     public function getBindings();
+
+    public function getArguments();
 }
