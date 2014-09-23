@@ -100,8 +100,12 @@ final class CustomAmqpMessage implements AmqpMessage
 
     public function setHeader($key, $value)
     {
-        $this->headers[strtolower($key)] = (string) $value;
-
+        if (is_array($value)) {
+            $this->headers[strtolower($key)] = $value;
+        } else {
+            $this->headers[strtolower($key)] = (string) $value;
+        }
+        
         return $this;
     }
 
